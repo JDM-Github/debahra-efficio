@@ -3,14 +3,13 @@ const cors       = require('cors')
 const serverless = require("serverless-http")
 const path       = require('path');
 const bodyParser = require('body-parser');
+const sendEmail  = require('./emailSender.js');
 
-const sendEmail = require('./emailSender.js');
 
 const app    = express()
 const router = express.Router()
 
-
-DEVELOPMENT = false;
+DEVELOPMENT = true;
 if (DEVELOPMENT)
 {
     app.use(cors({
@@ -18,14 +17,20 @@ if (DEVELOPMENT)
         credentials: true,
         optionSuccessStatus: 200
     }));
-} else 
+}
+else 
+{
     app.use(cors());
+}
+
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client/build')));
 
 
-
+router.post("/test", (req, response) => {
+    response.json("TEST");
+});
 
 
 router.post("/request_account", (req, res) => {
@@ -42,3 +47,4 @@ router.get('*', (req, res) => {
 app.use('/.netlify/functions/api', router);
 module.exports.handler = serverless(app);
 
+npom

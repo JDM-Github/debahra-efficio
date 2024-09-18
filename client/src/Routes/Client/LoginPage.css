@@ -1,0 +1,12 @@
+
+.test {
+	position: absolute;
+	top: 20px;
+	left: 50px;
+
+	width: 500px;
+	height: 500px;
+	background-color: blue;
+
+	border-radius: 20px;
+}

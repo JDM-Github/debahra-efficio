@@ -1,0 +1,154 @@
+.admin-navigation {
+	z-index: 1;
+	position: relative;
+	height: 100vh;
+	width: 20vw;
+	background-color: white;
+	padding: 10px;
+	box-sizing: border-box;
+	transition: width 0.2s ease-in-out;
+
+	&.shrunk {
+		width: 60px;
+	}
+
+	&.expanded {
+		width: 20vw;
+	}
+
+	.nav-toggle {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		background-color: transparent;
+		border: none;
+		cursor: pointer;
+		font-size: 20px;
+	}
+
+	.nav-items {
+		padding: 10px;
+		box-sizing: border-box;
+		width: 100%;
+		background-color: #efeeef;
+		text-align: left;
+		margin-bottom: 10px;
+		border-radius: 10px;
+		display: flex;
+		align-items: center;
+		transition: all 0.3s ease;
+		position: relative;
+
+		* {
+			width: 100%;
+		}
+
+		a {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			color: #111;
+			font-weight: bold;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		a > div {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: absolute;
+		}
+
+		.icon {
+			margin-right: 10px;
+		}
+
+		&:hover {
+			overflow: visible;
+			background-color: #ccc;
+		}
+
+		i {
+			font-size: 18px;
+			margin-right: 10px;
+		}
+
+		&:hover::after {
+			content: attr(data-label);
+			position: absolute;
+			left: 100%;
+			margin-left: 10px;
+			background-color: #ffffff;
+			color: #111;
+			padding: 5px 10px;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+			white-space: nowrap;
+			font-size: 14px;
+			font-weight: bold;
+			z-index: 1000;
+		}
+	}
+
+	input.nav-items {
+		outline: none;
+		border: 2px solid #aaa;
+		text-align: left;
+		background-color: white;
+		margin-bottom: 20px;
+	}
+
+	&.shrunk input.nav-items {
+		&:hover {
+			width: auto;
+			background-color: white;
+		}
+	}
+
+	.nav-toggle {
+		position: absolute;
+		width: 30px;
+		height: 30px;
+		background-color: black;
+		color: white;
+		font-weight: bold;
+		right: -30px;
+		top: 50%;
+		transform: translateY(-50%);
+		border-radius: 0 50% 50% 0;
+	}
+
+}
+
+@media (max-width: 1100px) {
+	.admin-navigation {
+		width: 60px !important;
+
+		.nav-items {
+			a > div {
+				display: none;
+			}
+
+		}
+
+		input.nav-items {
+			&:hover {
+				width: auto;
+				background-color: white;
+			}
+		}
+		input.nav-items::placeholder {
+			color: white
+		}
+	}
+
+	.nav-toggle {
+		display: none;
+	}
+
+
+}
