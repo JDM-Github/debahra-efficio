@@ -1,32 +1,84 @@
 import React, {useState} from 'react';
+import TopBar     from './TopBar.tsx';
+import Copyright  from './Copyright.tsx';
 import './Chats.scss';
 
 import RequestHandler from '../../Functions/RequestHandler.js';
 
-function Message({ text, isSent }) {
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faReply, faHeart, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+
+function Message({ text, isSent, replyText, replyTo, reactMessage, onReply, onReact, onDelete }) {
+
 	return (
-		<div className={`message ${isSent ? 'sent' : 'received'}`}>
+		<>
+		{
+			replyText && replyText !== '' ? 
+			<>
+				<div className={`reply-to ${isSent ? 'sent' : 'received'}`}>You replied to {replyTo}</div>
+				<div className={`reply-message ${isSent ? 'sent' : 'received'}`}>{replyText}</div>
+			</> : null
+		}
+		<div
+			className={`message ${isSent ? 'sent' : 'received'}`}
+		>
 			{text}
+			<div className="message-buttons">
+				<button onClick={onReply}>
+					<FontAwesomeIcon icon={faReply} />
+				</button>
+				<button onClick={onReact}>
+					<FontAwesomeIcon icon={faHeart} />
+				</button>
+				<button onClick={onDelete}>
+					<FontAwesomeIcon icon={faTrashAlt} />
+				</button>
+			</div>
 		</div>
+		</>
 	);
 }
 
 function ChatWindow({ chatPartner }) {
 	const [messages, setMessages] = useState([
-		{ text: "Hello, what do you think about the request?", isSent: false },
-		{ text: "I will look into it.", isSent: true },
-		{ text: "Oh okay, update me.", isSent: false }
+		{ replyTo: '', replyText: '', text: "Hello, what do you think about the request?", isSent: false },
+		{ replyTo: '', replyText: '', text: "I will look into it.", isSent: true },
+		{ replyTo: 'JD', replyText: 'I will look into it.', text: "Oh okay, update me.", isSent: false }
 	]);
 	const [newMessage, setNewMessage] = useState('');
+	const [replyMessage, setReplyMessage] = useState('');
+	const [replyUser, setReplyUser] = useState('');
 
 	const handleSendMessage = () => {
 		if (newMessage.trim()) {
-			setMessages([...messages, { text: newMessage, isSent: true }]);
+			setMessages([...messages, { replyTo: replyUser, replyText: replyMessage, text: newMessage, isSent: true }]);
 			setNewMessage('');
-
-			RequestHandler.handleRequest("post", "test")
-			.then((response) => { alert(response); });
+			setReplyMessage('');
+			setReplyUser('');
 		}
+	};
+
+	const handleKeyDown = (e) => {
+		if (e.key === 'Enter') {
+			handleSendMessage();
+		}
+	};
+
+	const handleReply = (index) => {
+		setReplyMessage(messages[index].text);
+		if (!messages[index].isSent)
+			setReplyUser("JD");
+		else
+			setReplyUser("yourself");
+	};
+
+	const handleReact = (index) => {
+		console.log("React to message:", index);
+
+	};
+
+	const handleDelete = (index) => {
+		setMessages(messages.filter((_, i) => i !== index));
 	};
 
 	return (
@@ -36,15 +88,30 @@ function ChatWindow({ chatPartner }) {
 			</div>
 			<div className="message-container">
 				{messages.map((message, index) => (
-					<Message key={index} text={message.text} isSent={message.isSent} />
+					<Message 
+						key={index} 
+						text={message.text} 
+						isSent={message.isSent}
+						replyText={message.replyText}
+						replyTo={message.replyTo}
+						onReply={() => handleReply(index)}
+						onReact={() => handleReact(index)}
+						onDelete={() => handleDelete(index)}
+					/>
 				))}
 			</div>
+			{
+				replyMessage && replyMessage !== '' ?
+					<div className="reply-input"><b>Replying to {replyUser}</b>: {replyMessage}</div>
+				: null	
+			}
 			<div className="message-input">
 				<input
 					type="text"
 					value={newMessage}
 					onChange={(e) => setNewMessage(e.target.value)}
 					placeholder="Type a message..."
+					onKeyDown={handleKeyDown}
 				/>
 				<button onClick={handleSendMessage}>Send</button>
 			</div>
@@ -120,55 +187,55 @@ function ChatContainer() {
 
 
 
-function PeopleWhoAddedYouItem({ profilePic, name, onAccept, onRemove }) {
-	return (
-		<div className="people-who-added-you-item">
-			<img className="profile-pic" src={profilePic} alt={`${name}'s profile`} />
-			<div className="people-details">
-				<div className="name">{name}</div>
-				<div className="actions">
-					<button className="accept-btn" onClick={onAccept}>Accept</button>
-					<button className="remove-btn" onClick={onRemove}>Remove</button>
-				</div>
-			</div>
-		</div>
-	);
-}
+// function PeopleWhoAddedYouItem({ profilePic, name, onAccept, onRemove }) {
+// 	return (
+// 		<div className="people-who-added-you-item">
+// 			<img className="profile-pic" src={profilePic} alt={`${name}'s profile`} />
+// 			<div className="people-details">
+// 				<div className="name">{name}</div>
+// 				<div className="actions">
+// 					<button className="accept-btn" onClick={onAccept}>Accept</button>
+// 					<button className="remove-btn" onClick={onRemove}>Remove</button>
+// 				</div>
+// 			</div>
+// 		</div>
+// 	);
+// }
 
-function SuggestionItem({ profilePic, name, onAddFriend }) {
-	return (
-		<div className="suggestion-item">
-			<img className="profile-pic" src={profilePic} alt={`${name}'s profile`} />
-			<div className="suggestion-details">
-				<div className="name">{name}</div>
-				<button className="add-friend-btn" onClick={onAddFriend}>
-					Add Friend
-				</button>
-			</div>
-		</div>
-	);
-}
+// function SuggestionItem({ profilePic, name, onAddFriend }) {
+// 	return (
+// 		<div className="suggestion-item">
+// 			<img className="profile-pic" src={profilePic} alt={`${name}'s profile`} />
+// 			<div className="suggestion-details">
+// 				<div className="name">{name}</div>
+// 				<button className="add-friend-btn" onClick={onAddFriend}>
+// 					Add Friend
+// 				</button>
+// 			</div>
+// 		</div>
+// 	);
+// }
 
-function SuggestionList({className})
+function SuggestionList()
 {
-	const peopleWhoAddedYou = [
-		{ name: 'Dave', profilePic: 'https://via.placeholder.com/50' },
-		{ name: 'Eve', profilePic: 'https://via.placeholder.com/50' },
-	];
+	// const peopleWhoAddedYou = [
+	// 	{ name: 'Dave', profilePic: 'https://via.placeholder.com/50' },
+	// 	{ name: 'Eve', profilePic: 'https://via.placeholder.com/50' },
+	// ];
 
-	const suggestions = [
-		{ name: 'Alice', profilePic: 'https://via.placeholder.com/50' },
-		{ name: 'Bob', profilePic: 'https://via.placeholder.com/50' },
-		{ name: 'Charlie', profilePic: 'https://via.placeholder.com/50' },
-	];
+	// const suggestions = [
+	// 	{ name: 'Alice', profilePic: 'https://via.placeholder.com/50' },
+	// 	{ name: 'Bob', profilePic: 'https://via.placeholder.com/50' },
+	// 	{ name: 'Charlie', profilePic: 'https://via.placeholder.com/50' },
+	// ];
 
-	const handleAcceptFriend = (name) => alert(`${name} has been accepted as a friend.`);
-	const handleRemoveFriend = (name) => alert(`${name} has been removed.`);
-	const handleAddFriend    = (name) => alert(`Friend request sent to ${name}`);
+	// const handleAcceptFriend = (name) => alert(`${name} has been accepted as a friend.`);
+	// const handleRemoveFriend = (name) => alert(`${name} has been removed.`);
+	// const handleAddFriend    = (name) => alert(`Friend request sent to ${name}`);
 
 	return (
-		<div className={`suggestion-container ${className}`}>
-			<div className="title-suggest">People Who Added You</div>
+		<div className={`suggestion-container`}>
+			{/*<div className="title-suggest">People Who Added You</div>
 			<div className="people-who-added-you-list">
 				{peopleWhoAddedYou.map((person, index) => (
 					<PeopleWhoAddedYouItem
@@ -193,7 +260,7 @@ function SuggestionList({className})
 						onAddFriend={() => handleAddFriend(suggestion.name)}
 					/>
 				))}
-			</div>
+			</div>*/}
 		</div>
 	);
 }
@@ -201,12 +268,13 @@ function SuggestionList({className})
 export default function Chats({isShrunk}) {
 	return (
 		<div className="chats">
-			<div className="title">ADMIN CHATS</div>
+			<TopBar />
 			<div className="main-chats">
 				<ChatContainer />
 				<ChatWindow chatPartner="JD"/>
-				<SuggestionList className={!isShrunk ? 'expanded' : ''} />
+				<SuggestionList />
 			</div>
+			<Copyright />
 		</div>
 	);
 }

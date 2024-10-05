@@ -1,12 +1,11 @@
-
-.accounts {
+.requests {
 	display: flex;
 	flex-direction: column;
 	position: relative;
 	width: 100%;
 	flex-grow: 1;
 
-	.main-accounts {
+	.main-requests {
 		display: flex;
 		flex-direction: column;
 
@@ -25,5 +24,3 @@
 		}
 	}
 }
-
-
