@@ -1,0 +1,158 @@
+.dashboard {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: #eaeaea;
+
+	.top {
+		width: 100%;
+		height: 40px;
+		background-color: #385724;
+	}
+
+	.middle {
+		position: relative;
+		height: calc(100vh - 80px);
+		img {
+			position: relative;
+			width: 100%;
+			height: 70%;
+			background-color: #a9d18e;
+		}
+		.get-started {
+			text-decoration: none;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 1.5rem;
+			font-weight: bold;
+			position: absolute;
+			width: 200px;
+			height: 40px;
+			top: 60%;
+			left: calc(50% - 100px);
+			background-color: red;
+			border-radius: 10px;
+			border: 2px solid white;
+			color: white;
+			background-color: #385724;
+			cursor: pointer;
+			transition: transform 0.1s;
+			&:hover {
+				background-color: #507a33;
+				transform: scale(1.1);
+			}
+		}
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(5, 1fr);
+			gap: 10px;
+			padding: 50px;
+			box-sizing: border-box;
+
+			.service {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				color: white;
+				font-size: 1.2rem;
+				height: 40px;
+				background-color: #385724;
+				border-radius: 10px;
+				// border: 1px solid white;
+				box-shadow: 0 5px 5px #00000033;
+			}
+		}
+
+		.login-page {
+			display: flex;
+			position: relative;
+			left: 20%;
+			top: 10%;
+			width: 60%;
+			height: 80%;
+			background-color: white;
+			border-radius: 10px;
+			box-shadow: 0 5px 5px #00000033;
+			overflow: hidden;
+
+			.login,
+			.register {
+				display: flex;
+				flex-direction: column;
+
+				padding: 40px 30px;
+				box-sizing: border-box;
+				column-gap: 10px;
+				position: relative;
+				width: 50%;
+				height: 100%;
+
+				h1 {
+					margin-bottom: 30px;
+					color: #555;
+					font-size: 2.5rem;
+				}
+
+				input,
+				button {
+					border: 2px solid #cfcfcf;
+					border-radius: 10px;
+					padding: 5px;
+					font-size: 1.2rem;
+					color: #555;
+					outline: none;
+					user-select: none;
+				}
+				input:focus {
+					border-color: #6a9c48;
+				}
+				button {
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					color: white;
+					font-weight: bold;
+					font-size: 1.5rem;
+					background-color: #507a33;
+					padding: 20px;
+					cursor: pointer;
+
+					&:hover {
+						background-color: #385724;
+					}
+				}
+
+				& > * {
+					margin-bottom: 5px;
+					height: 30px;
+					color: #555;
+					user-select: none;
+				}
+				.request-reg {
+					cursor: pointer;
+					transition: transform 0.1s;
+					color: #888;
+				}
+				.request-reg:hover {
+					color: #333;
+					transform: scale(1.1);
+				}
+			}
+			.display {
+				position: absolute;
+				width: 50%;
+				height: 100%;
+				transition: transform 0.4s ease-in-out;
+				box-shadow: -5px 0 5px #00000033, 5px 0 5px #00000033;
+			}
+		}
+	}
+	.bottom {
+		position: relative;
+		height: 40px;
+		background-color: darkgray;
+	}
+}

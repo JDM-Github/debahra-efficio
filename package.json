@@ -5,19 +5,34 @@
 	"scripts": {
 		"start": "netlify dev",
 		"login": "netlify login",
-		"build": "netlify deploy --prod"
+		"buildr": "cd client && npm run build",
+		"build": "netlify deploy --prod",
+		"buildall": "cd client && npm run build && cd .. && netlify deploy --prod",
+		"init_sql": "npx sequelize-cli",
+		"migrate": "npx sequelize-cli db:migrate --models-path ./database/models --config ./database/config/config.js",
+		"seedall": "npx sequelize-cli db:seed:all --seeders-path ./database/seeders --config ./database/config/config.js"
 	},
 	"dependencies": {
+		"bcryptjs": "^2.4.3",
+		"cloudinary": "^2.2.0",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.5",
 		"express": "^4.19.2",
+		"express-async-handler": "^1.2.0",
 		"express-basic-auth": "^1.2.1",
+		"jsonwebtoken": "^9.0.2",
+		"mongoose": "^8.4.0",
+		"multer": "^1.4.5-lts.1",
 		"netlify-cli": "^17.26.2",
 		"netlify-lambda": "^2.0.16",
+		"node-cron": "^3.0.3",
 		"nodemailer": "^6.9.14",
 		"pg": "^8.12.0",
+		"react-select": "^5.8.1",
 		"sequelize": "^6.37.3",
+		"sequelize-cli": "^6.6.2",
 		"serverless-http": "^3.2.0",
+		"streamifier": "^0.1.1",
 		"twilio": "^5.2.3"
 	}
 }

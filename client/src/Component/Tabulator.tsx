@@ -1,21 +1,37 @@
-import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faFilter } from '@fortawesome/free-solid-svg-icons';
+import React, { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+	faEdit,
+	faTrash,
+	faPlus,
+	faFilter,
+} from "@fortawesome/free-solid-svg-icons";
 
-import TopTabulator from './TopTabulator.tsx'
-import Paginator from './Paginator.tsx'
-import './Tabulator.scss'
+import TopTabulator from "./TopTabulator.tsx";
+import Paginator from "./Paginator.tsx";
+import "./Tabulator.scss";
 
-export default function Tabulator({ data, headers, renderRow, actions, buttons }) {
+export default function Tabulator({
+	data,
+	headers,
+	renderRow,
+	actions,
+	buttons,
+	selects,
 
-	const [currentPage, setCurrentPage] = useState(1);
-	const itemsPerPage = 10;
+	currentPage,
+	setCurrentPage,
+	itemsPerPage,
 
-	const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
+	total,
+}) {
 	return (
 		<div className="tabulator">
-			<TopTabulator searchPlaceholder="Search..." buttons={buttons} />
+			<TopTabulator
+				searchPlaceholder="Search..."
+				buttons={buttons}
+				selectOptions={selects}
+			/>
 			<div className="table-wrapper">
 				<table>
 					<thead>
@@ -26,21 +42,51 @@ export default function Tabulator({ data, headers, renderRow, actions, buttons }
 						</tr>
 					</thead>
 					<tbody>
-						{paginatedData.map((item, rowIndex) => (
+						{data.map((item, rowIndex) => (
 							<tr key={rowIndex}>
 								{renderRow(item)}
 								{actions && (
 									<td>
 										<div className="action-buttons">
-											{actions.map((action, index) => (
-												<button
-													key={index}
-													className={`${action.className}`}
-													onClick={() => action.onClick(item.id)}
-												>
-													<FontAwesomeIcon icon={action.icon} />
-												</button>
-											))}
+											{actions.map(
+												(action, index) =>
+													(action.onCondition ===
+														null ||
+														action.onCondition ===
+															undefined ||
+														action.onCondition(
+															item
+														)) && (
+														<button
+															key={index}
+															className={`${action.className}`}
+															onClick={() =>
+																action.onClick(
+																	item.id,
+																	item
+																)
+															}
+														>
+															<FontAwesomeIcon
+																icon={
+																	action.icon
+																}
+															/>
+															{action.label && (
+																<div
+																	style={{
+																		marginLeft:
+																			"5px",
+																	}}
+																>
+																	{
+																		action.label
+																	}
+																</div>
+															)}
+														</button>
+													)
+											)}
 										</div>
 									</td>
 								)}
@@ -51,12 +97,11 @@ export default function Tabulator({ data, headers, renderRow, actions, buttons }
 			</div>
 
 			<Paginator
-                currentPage={currentPage}
-                totalItems={data.length}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-            />
+				currentPage={currentPage}
+				totalItems={total}
+				itemsPerPage={itemsPerPage}
+				onPageChange={setCurrentPage}
+			/>
 		</div>
 	);
 }
-

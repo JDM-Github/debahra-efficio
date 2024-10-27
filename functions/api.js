@@ -1,50 +1,80 @@
-const express    = require("express");
-const cors       = require('cors')
-const serverless = require("serverless-http")
-const path       = require('path');
-const bodyParser = require('body-parser');
-const sendEmail  = require('./emailSender.js');
+const express = require("express");
+const cors = require("cors");
+const serverless = require("serverless-http");
+const path = require("path");
+const bodyParser = require("body-parser");
 
+const expressAsyncHandler = require("express-async-handler");
 
-const app    = express()
-const router = express.Router()
+const { sequelize } = require("./models");
+const {
+	userRouter,
+	chatRouter,
+	reqRouter,
+	servRouter,
+	appointmentRouter,
+} = require("./routers.js");
 
-DEVELOPMENT = true;
-if (DEVELOPMENT)
-{
-    app.use(cors({
-        origin: 'http://localhost:3000',
-        credentials: true,
-        optionSuccessStatus: 200
-    }));
+class App {
+	constructor() {
+		this.app = express();
+		this.router = express.Router();
+		this.DEVELOPMENT = true;
+
+		this.setupMiddleware();
+		this.setupRoutes();
+	}
+
+	setupMiddleware() {
+		if (this.DEVELOPMENT) {
+			this.app.use(
+				cors({
+					origin: "http://localhost:3000",
+					credentials: true,
+					optionSuccessStatus: 200,
+				})
+			);
+		} else {
+			this.app.use(cors());
+		}
+
+		this.app.use(bodyParser.json());
+		this.app.use(express.json());
+		this.app.use(express.static(path.join(__dirname, "../client/build")));
+	}
+
+	setupRoutes() {
+		this.router.use("/users", userRouter);
+		this.router.use("/chats", chatRouter);
+		this.router.use("/request", reqRouter);
+		this.router.use("/service", servRouter);
+		this.router.use("/appointment", appointmentRouter);
+
+		this.router.get("/reset", expressAsyncHandler(this.reset));
+		this.router.post("/request_account", this.requestAccount);
+		this.router.get("*", this.handleCatchAll);
+
+		this.app.use("/.netlify/functions/api", this.router);
+	}
+
+	requestAccount(req, res) {
+		console.log("REQUEST TO ADMIN");
+		res.json("REQUEST TO ADMIN IS SUCCESS");
+	}
+
+	handleCatchAll(req, res) {
+		res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+	}
+
+	async reset(req, res) {
+		await sequelize.sync({ force: true });
+		res.send("RESET DATABASE");
+	}
+
+	start() {
+		return serverless(this.app);
+	}
 }
-else 
-{
-    app.use(cors());
-}
 
-app.use(bodyParser.json());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../client/build')));
-
-
-router.post("/test", (req, response) => {
-    response.json("TEST");
-});
-
-
-router.post("/request_account", (req, res) => {
-    console.log("REQUEST TO ADMIN");
-    res.json("REQUEST TO ADMIN IS SUCCESS");
-});
-
-
-
-
-router.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build'), 'index.html');
-});
-app.use('/.netlify/functions/api', router);
-module.exports.handler = serverless(app);
-
-npom
+const appInstance = new App();
+module.exports.handler = appInstance.start();
