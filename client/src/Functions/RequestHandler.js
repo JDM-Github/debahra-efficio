@@ -2,10 +2,10 @@ import axios from "axios";
 
 class RequestHandler {
 	static async handleRequest(method, link, requestData = {}, headers = {}) {
-		const development = true;
+		const development = false;
 		const baseURL = development
 			? "http://localhost:8888"
-			: "https://efficio-test-jdm.netlify.app";
+			: "https://debahra.netlify.app";
 
 		const methodUse = method.toLowerCase();
 		const axiosMethod =
