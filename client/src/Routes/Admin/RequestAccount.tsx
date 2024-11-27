@@ -8,17 +8,26 @@ import {
 	faArchive,
 	faCheck,
 } from "@fortawesome/free-solid-svg-icons";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import RequestHandler from "../../Functions/RequestHandler.js";
 import Tabulator from "../../Component/Tabulator.tsx";
 import "./SCSS/Requests.scss";
 
-const headers = ["ID", "Email", "Created At", "Actions"];
+const headers = [
+	"ID",
+	"Full Name",
+	"Username",
+	"Email",
+	"Created At",
+	"Actions",
+];
 
 const renderRow = (item) => (
 	<>
 		<td>{item.id}</td>
+		<td>{item.firstname + " " + item.lastname}</td>
+		<td>{item.username}</td>
 		<td>{item.email}</td>
 		<td>{item.createdAt.split("T")[0]}</td>
 	</>
@@ -36,7 +45,6 @@ export default function RequestAccount() {
 		{
 			placeholder: "ACTIVE",
 			options: [
-				// { value: "all", label: "ALL", icon: faAsterisk },
 				{ value: "unarchived", label: "ACTIVE", icon: faCheckCircle },
 				{ value: "archived", label: "ARCHIVED", icon: faArchive },
 			],
@@ -81,12 +89,11 @@ export default function RequestAccount() {
 			toast.error(`An error occurred while archiving data. ${error}`);
 		}
 	};
-
 	const acceptRequest = async (id) => {
 		try {
 			const data = await RequestHandler.handleRequest(
 				"post",
-				"users/accept_request",
+				"users/accept_request_user",
 				{ id }
 			);
 			if (data.success === false) {
@@ -104,7 +111,6 @@ export default function RequestAccount() {
 			);
 		}
 	};
-
 	const loadRequestData = async () => {
 		try {
 			const data = await RequestHandler.handleRequest(
@@ -125,7 +131,6 @@ export default function RequestAccount() {
 			toast.error(`An error occurred while requesting data. ${error}`);
 		}
 	};
-
 	useEffect(() => {
 		loadRequestData();
 	}, [currPage, isArchived]);
@@ -149,7 +154,6 @@ export default function RequestAccount() {
 				/>
 			</div>
 			<Copyright />
-			<ToastContainer />
 		</div>
 	);
 }

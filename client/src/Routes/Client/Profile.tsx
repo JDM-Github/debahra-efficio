@@ -3,11 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import TopBar from "../../Component/TopBar.tsx";
 import Copyright from "../../Component/Copyright.tsx";
-import "./Profile.scss";
-import { toast, ToastContainer } from "react-toastify";
+import "./SCSS/Profile.scss";
 import "react-toastify/dist/ReactToastify.css";
-
-import ProfileModal from "../../Component/ProfileModal.tsx";
 
 export default function Dashboard({ changeURL }) {
 	const navigate = useNavigate();
@@ -177,7 +174,6 @@ export default function Dashboard({ changeURL }) {
 				)}
 			</div>
 			<Copyright />
-			<ToastContainer />
 		</div>
 	);
 }

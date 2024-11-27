@@ -1,7 +1,7 @@
 import React from "react";
 import TopBar from "../../Component/TopBar.tsx";
 import Copyright from "../../Component/Copyright.tsx";
-import "./About.scss";
+import "./SCSS/About.scss";
 
 export default function Dashboard({ changeURL }) {
 	return (

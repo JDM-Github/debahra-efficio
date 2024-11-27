@@ -7,6 +7,12 @@ class RequestHandler {
 			? "http://localhost:8888"
 			: "https://debahra.netlify.app";
 
+		// get nakikita ung link o na aacccess
+		// put binago na pangalan ng post
+		// di accessible sa link
+
+		// get, put, post, delete
+
 		const methodUse = method.toLowerCase();
 		const axiosMethod =
 			methodUse === "get"

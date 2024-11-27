@@ -8,17 +8,21 @@ import {
 	faEnvelope,
 	faSignOutAlt,
 	faInfo,
+	faMoneyCheckDollar,
+	faTimesCircle,
+	faCheckCircle,
+	faSpinner,
+	faHourglassHalf,
 } from "@fortawesome/free-solid-svg-icons";
 
 import Navigation from "../../Component/Navigation.tsx";
 
-export default function AdminNavigation({ setIsOpen }) {
+export default function ClientNavigation() {
 	const location = useLocation();
 
 	return (
 		<Navigation
 			status={"CLIENT"}
-			setIsOpen={setIsOpen}
 			Nav={
 				<>
 					<NavLink
@@ -68,6 +72,75 @@ export default function AdminNavigation({ setIsOpen }) {
 					>
 						<FontAwesomeIcon icon={faCoffee} className="nav-icon" />
 						<div>Services</div>
+					</NavLink>
+
+					<hr />
+
+					<NavLink
+						to="pending-request"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faHourglassHalf}
+							className="nav-icon"
+						/>
+						<div>Pending Requests</div>
+					</NavLink>
+
+					<NavLink
+						to="ongoing-request"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faSpinner}
+							className="nav-icon"
+						/>
+						<div>Ongoing Requests</div>
+					</NavLink>
+
+					<NavLink
+						to="completed-request"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faCheckCircle}
+							className="nav-icon"
+						/>
+						<div>Completed Requests</div>
+					</NavLink>
+
+					<NavLink
+						to="cancelled-request"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faTimesCircle}
+							className="nav-icon"
+						/>
+						<div>Cancelled Requests</div>
+					</NavLink>
+
+					<hr />
+
+					<NavLink
+						to="transaction"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faMoneyCheckDollar}
+							className="nav-icon"
+						/>
+						<div>Transactions</div>
 					</NavLink>
 
 					<NavLink

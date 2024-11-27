@@ -1,0 +1,50 @@
+.stats-container {
+	display: flex;
+	justify-content: space-around;
+	gap: 20px;
+}
+
+.stat-card {
+	position: relative;
+	background: linear-gradient(
+		135deg,
+		rgb(23, 56, 1),
+		#548235,
+		rgba(85, 130, 53, 1)
+	);
+	border: 2px solid #71b146;
+	border-radius: 10px;
+	display: flex;
+	padding: 20px;
+	box-sizing: border-box;
+	gap: 10px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+	color: white;
+}
+
+.stat-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+	font-size: 30px;
+	margin-bottom: 15px;
+}
+
+.stat-value {
+	font-size: 32px;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+.stat-label {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+	font-size: 16px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}

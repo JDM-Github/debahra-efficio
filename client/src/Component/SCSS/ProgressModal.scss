@@ -1,0 +1,84 @@
+/* ProgressModal.scss */
+
+.progress-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.progress-modal-content {
+	padding: 20px;
+	border-radius: 8px;
+	position: relative;
+	width: 400px;
+	background-color: #385724;
+	border-radius: 10px;
+	border: 2px solid white;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+}
+
+.close-icon {
+	border: none;
+	background: none;
+	font-size: 24px;
+	cursor: pointer;
+	color: white;
+	&:hover {
+		color: #71b146;
+	}
+}
+
+.progress-stages {
+	margin-top: 20px;
+}
+
+.progress-stage {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 10px;
+	padding: 10px;
+	border: 1px solid #548235;
+	border-radius: 5px;
+	font-size: 1rem;
+	color: white;
+}
+
+.completed {
+	background-color: #548235;
+}
+
+.check-icon {
+	color: rgb(0, 255, 0);
+	margin-left: 10px;
+}
+
+.progress-percentage {
+	font-size: 18px;
+	margin-top: 15px;
+	font-weight: bold;
+	text-align: center;
+	color: white;
+}
+
+.stage-details {
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	background-color: #548235;
+	color: white;
+}

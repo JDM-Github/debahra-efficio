@@ -69,14 +69,16 @@
 		.login-page {
 			display: flex;
 			position: relative;
-			left: 20%;
 			top: 10%;
-			width: 60%;
+			left: 50%;
+			width: 800px;
+			max-width: 90%;
 			height: 80%;
 			background-color: white;
 			border-radius: 10px;
 			box-shadow: 0 5px 5px #00000033;
 			overflow: hidden;
+			transform: translateX(-50%);
 
 			.login,
 			.register {
@@ -94,6 +96,10 @@
 					margin-bottom: 30px;
 					color: #555;
 					font-size: 2.5rem;
+				}
+
+				.topInput {
+					width: 10px;
 				}
 
 				input,
@@ -155,4 +161,7 @@
 		height: 40px;
 		background-color: darkgray;
 	}
+}
+
+@media (max-width: 600px) {
 }

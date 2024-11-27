@@ -1,0 +1,127 @@
+.client-chats {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	width: 100%;
+	flex-grow: 1;
+
+	.main-chats {
+		display: flex;
+
+		flex-shrink: 0;
+		position: relative;
+		flex-grow: 1;
+		margin-bottom: 10px;
+		margin-left: 20px;
+		width: calc(100% - 40px);
+
+		.chat-container {
+			margin-top: 10px;
+			margin-left: 10px;
+			margin-right: 10px;
+			width: 22%;
+			height: auto;
+			min-height: 50%;
+			max-height: calc(80% - 20px);
+
+			display: flex;
+			flex-direction: column;
+			border: 1px solid #ddd;
+			background-color: #f9f9f9;
+			box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+			border-radius: 20px;
+			overflow: hidden;
+
+			.top-nav {
+				display: flex;
+				background-color: #fff;
+				border-bottom: 1px solid #ddd;
+				padding: 10px;
+				box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+				.nav-btn {
+					flex: 1;
+					padding: 10px;
+					border: none;
+					background: none;
+					cursor: pointer;
+					font-weight: bold;
+					text-align: center;
+					color: #333;
+					border-bottom: 3px solid transparent;
+
+					&.active {
+						border-bottom-color: #548235;
+						color: #548235;
+					}
+
+					&:hover {
+						background-color: #f0f0f0;
+					}
+				}
+			}
+
+			.search-bar {
+				padding: 10px;
+				background-color: #fff;
+
+				input {
+					width: 100%;
+					padding: 8px;
+					border: 1px solid #ddd;
+					border-radius: 4px;
+					box-sizing: border-box;
+				}
+			}
+
+			.chat-list {
+				flex: 1;
+				overflow-y: auto;
+				background-color: #fff;
+				padding: 10px;
+				box-sizing: border-box;
+
+				.chat-item {
+					display: flex;
+					align-items: center;
+					padding: 10px;
+					border-bottom: 1px solid #ddd;
+					cursor: pointer;
+					transition: background-color 0.2s;
+					background-color: #fff;
+
+					&:hover {
+						background-color: #f0f0f0;
+					}
+
+					.profile-pic {
+						width: 30px;
+						height: 30px;
+						border-radius: 50%;
+						margin-right: 10px;
+						object-fit: cover;
+					}
+
+					.chat-info {
+						flex: 1;
+						display: flex;
+						flex-direction: column;
+						justify-content: center;
+
+						.chat-name {
+							font-size: 0.95rem;
+							font-weight: bold;
+							margin-bottom: 4px;
+							color: #333;
+						}
+
+						.chat-last-message {
+							font-size: 0.875rem;
+							color: #777;
+						}
+					}
+				}
+			}
+		}
+	}
+}

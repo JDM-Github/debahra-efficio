@@ -16,15 +16,15 @@ import {
 import Tabulator from "../../Component/Tabulator.tsx";
 import "./SCSS/Appointment.scss";
 import RequestHandler from "../../Functions/RequestHandler.js";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const headers = [
 	"ID",
 	"Request ID",
 	"Service Name",
-	"Appointment Date",
-	"Appointment People",
+	"Start Date",
+	"Assigned Staff",
 	"Status",
 	"Created At",
 	"Actions",
@@ -177,7 +177,6 @@ export default function Appointment() {
 					</div>
 				</div>
 			)}
-			<ToastContainer />
 			<Copyright />
 		</div>
 	);

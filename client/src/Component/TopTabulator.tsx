@@ -99,7 +99,10 @@ export default function TopTabulator({
 				</div>
 				{selectOptions &&
 					selectOptions.map((select, selectIndex) => (
-						<IconSelect selectOptions={select} />
+						<>
+							<IconSelect selectOptions={select} />
+							<div style={{ marginLeft: "10px" }}></div>
+						</>
 					))}
 			</div>
 		</div>

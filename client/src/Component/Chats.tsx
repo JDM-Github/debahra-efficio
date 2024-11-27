@@ -9,12 +9,16 @@ import {
 	faHeart,
 	faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-import FormMaker from "./FormMaker.tsx";
+import TransactionModal from "./TransactionModal.tsx";
+import AddProgressStepModal from "./AddProgress.tsx";
 
 function Message({
+	user,
+	assignedEmployee,
+	request,
 	text,
 	isSent,
 	replyText,
@@ -22,21 +26,89 @@ function Message({
 	onReply,
 	onDelete,
 	chatPartner,
-	openForm,
+	handleOpenModal,
+	updateMessage,
 }) {
 	const isOffer =
-		text.startsWith("::service::") && text.includes("::price::");
+		text.startsWith("::downpayment::") && text.includes("::totalprice::");
 	const offerDetails = isOffer
-		? text.match(/::service::"(.+?)",::price::"(\d+?)"/)
+		? text.match(/::downpayment::"(.+?)",::totalprice::"(\d+?)"/)
+		: null;
+	const downpayment = offerDetails ? offerDetails[1] : null;
+	const totalprice = offerDetails ? offerDetails[2] : null;
+
+	// TRANSACTION
+	const isTransactionOffer =
+		text.startsWith("::referencenumber::") && text.includes("::proof::");
+	const transactionDetails = isTransactionOffer
+		? text.match(
+				/::referencenumber::"(.+?)",::proof::"(.+?)",::amount::"(.+?)",::type::"(.+?)",::totalprice::"(.+?)",::downpayment::"(.+?)"/
+		  )
 		: null;
 
-	const service = offerDetails ? offerDetails[1] : null;
-	const price = offerDetails ? offerDetails[2] : null;
-	const id = offerDetails ? offerDetails[3] : 1;
-	const serviceUrl = offerDetails
-		? offerDetails[4]
-		: "https://i.pinimg.com/736x/f7/ac/88/f7ac88a1963942fe198262445a200595.jpg";
+	const referencenumber = transactionDetails ? transactionDetails[1] : null;
+	const proof = transactionDetails ? transactionDetails[2] : null;
+	const amount = transactionDetails ? transactionDetails[3] : null;
+	const typeTransaction = transactionDetails ? transactionDetails[4] : null;
+	const transactionTotal = transactionDetails ? transactionDetails[5] : null;
+	const [alreadyAccepted, setAlreadyAccepted] = useState(false);
 
+	const checkConfirm = async () => {
+		if (isTransactionOffer)
+			try {
+				const data = await RequestHandler.handleRequest(
+					"post",
+					"request/check-confirm-transaction",
+					{
+						referenceNumber: referencenumber,
+					}
+				);
+				if (data.success) {
+					setAlreadyAccepted(data.value);
+				} else {
+					return;
+				}
+			} catch (error) {
+				return;
+			}
+	};
+
+	const addToTransaction = async () => {
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"request/add-transaction",
+				{
+					userId: user,
+					assignedEmployee,
+					requestId: request.id,
+					typeOfTransaction: typeTransaction,
+					referenceNumber: referencenumber,
+					uploadedProof: proof,
+					amount,
+					totalPrice:
+						request.price === null
+							? transactionTotal
+							: request.price,
+				}
+			);
+			if (data.success) {
+				toast.success(
+					"Successfully confirm the transaction. It will not be recorded"
+				);
+				updateMessage();
+			} else {
+				toast.error(data.message);
+				return;
+			}
+		} catch (error) {
+			toast.error("Error adding the transaction");
+			return;
+		}
+	};
+	useEffect(() => {
+		checkConfirm();
+	}, []);
 	return (
 		<>
 			{replyText && replyText !== "" ? (
@@ -58,21 +130,71 @@ function Message({
 					isOffer ? "offer-message" : ""
 				}`}
 			>
-				{/* Display formatted offer if it is an offer message */}
 				{isOffer ? (
 					<>
-						<div className="offer-details">
-							<strong>Service:</strong> {service} <br />
-							<strong>Price:</strong> ${price}
+						<div className="offer-message">
+							<div className="offer-details">
+								<div className="price-info">
+									<span className="price-icon">💵</span>
+									<strong>Down Payment:</strong> ₱{" "}
+									{downpayment}
+								</div>
+								<div className="price-info">
+									<span className="price-icon">🛒</span>
+									<strong>Total Price:</strong> ₱ {totalprice}
+								</div>
+							</div>
+							{!isSent && request && request.price == null && (
+								<button
+									className="take-offer-button"
+									onClick={() =>
+										handleOpenModal(downpayment, totalprice)
+									}
+								>
+									Take Offer
+								</button>
+							)}
 						</div>
-						<button
-							className="take-offer-button"
-							onClick={() => {
-								openForm(service, id, serviceUrl);
-							}}
-						>
-							Take Offer
-						</button>
+					</>
+				) : isTransactionOffer ? (
+					<>
+						<div className="offer-message">
+							<div className="offer-details">
+								<div
+									style={{ fontSize: "20px" }}
+									className="price-info"
+								>
+									<b>
+										{typeTransaction === "downpayment"
+											? "DOWNPAYMENT TRANSACTION"
+											: typeTransaction === "fullpayment"
+											? "FULL PAYMENT TRANSACTION"
+											: typeTransaction ===
+											  "partialpayment"
+											? "PARTIAL PAYMENT TRANSACTION"
+											: "SELECT A TRANSACTION TYPE"}
+									</b>
+								</div>
+								<div className="price-info">
+									<strong>Reference Number:</strong>{" "}
+									{referencenumber}
+								</div>
+								<div className="price-info">
+									<strong>Amount:</strong> ₱ {amount}
+								</div>
+								<div className="price-info">
+									<img src={proof} />
+								</div>
+							</div>
+							{!isSent && !alreadyAccepted && (
+								<button
+									className="take-offer-button"
+									onClick={addToTransaction}
+								>
+									Confirm Transaction
+								</button>
+							)}
+						</div>
 					</>
 				) : (
 					<>{text}</>
@@ -81,16 +203,38 @@ function Message({
 					<button onClick={onReply}>
 						<FontAwesomeIcon icon={faReply} />
 					</button>
-					<button onClick={onDelete}>
+					{/* <button onClick={onDelete}>
 						<FontAwesomeIcon icon={faTrashAlt} />
-					</button>
+					</button> */}
 				</div>
 			</div>
 		</>
 	);
 }
 
-export default function ChatWindow({ chatPartner, partnerId = "" }) {
+interface Request {
+	Service: {
+		serviceName: string;
+	};
+	id: string;
+	userId: string;
+	status: string;
+	price: number;
+	paidAmount: number;
+}
+type ChatWindowProps = {
+	chatPartner: any;
+	request?: Request | null;
+	partnerId?: string;
+	staffId?: string;
+};
+
+export default function ChatWindow({
+	chatPartner,
+	request = null,
+	partnerId = "",
+	staffId = "",
+}: ChatWindowProps) {
 	const navigate = useNavigate();
 	useEffect(() => {
 		if (localStorage.getItem("users") === null) {
@@ -100,28 +244,50 @@ export default function ChatWindow({ chatPartner, partnerId = "" }) {
 		sessionStorage.removeItem("error-message");
 	}, []);
 	const user = JSON.parse(localStorage.getItem("users") || "{}");
+	const staffTarget = staffId != "" ? "staff" + staffId : "staff" + user.id;
+
+	const [transactionModal, setIstTransactionModal] = useState(false);
+	const handleOpenModal = (downpayment, totalPrice) => {
+		setDownpaymentPrice(downpayment);
+		setTotalPrice(totalPrice);
+		setIstTransactionModal(true);
+	};
+	const handleCloseModal = () => {
+		setDownpaymentPrice("");
+		setTotalPrice("");
+		setIstTransactionModal(false);
+	};
+	const handleSubmit = (data) => {
+		setDownpaymentPrice("");
+		setTotalPrice("");
+		handleSendMessage(data);
+	};
 
 	const [newMessage, setNewMessage] = useState("");
 	const [replyMessage, setReplyMessage] = useState("");
 	const [replyUser, setReplyUser] = useState("");
-
 	const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
-	const [selectedService, setSelectedService] = useState("");
-	const [price, setPrice] = useState("");
 
-	const createOffer = () => {
-		setIsOfferModalOpen(true);
-	};
+	const [downpaymentPrice, setDownpaymentPrice] = useState("");
+	const [totalPrice, setTotalPrice] = useState("");
 
+	// USE FOR PROGRESS
+	const [isAddProgressStepModalOpen, setAddProgressStepModalOpen] =
+		useState(false);
+	const [progressSteps, setProgressSteps] = useState<string[]>([]);
+	const handleAddProgressStep = (stepType) =>
+		setProgressSteps([...progressSteps, stepType]);
+	const openAddProgressStepModal = () => setAddProgressStepModalOpen(true);
+	const closeAddProgressStepModal = () => setAddProgressStepModalOpen(false);
+
+	// USE FOR OFFER
+	const createOffer = () => setIsOfferModalOpen(true);
 	const submitOffer = () => {
-		const service = JSON.parse(selectedService);
-
-		const offerString = `::service::"${service.serviceName}",::price::"${price}",::id::"${service.id}",::serviceUrl::"${service.serviceUrl}"`;
-
+		const offerString = `::downpayment::"${downpaymentPrice}",::totalprice::"${totalPrice}"`;
 		handleSendMessage(offerString);
 		setIsOfferModalOpen(false);
-		setSelectedService("");
-		setPrice("");
+		setDownpaymentPrice("");
+		setTotalPrice("");
 	};
 
 	interface Message {
@@ -135,7 +301,7 @@ export default function ChatWindow({ chatPartner, partnerId = "" }) {
 		userId: string;
 		messages: Message[];
 	}
-	const [allMessages, setAllMessages] = useState<Chat>();
+	const [allMessages, setAllMessages] = useState<Chat | null>(null);
 	const getAllMessage = async () => {
 		try {
 			const data = await RequestHandler.handleRequest(
@@ -143,9 +309,10 @@ export default function ChatWindow({ chatPartner, partnerId = "" }) {
 				"chats/user",
 				{ id: partnerId != "" ? partnerId : user.id }
 			);
-
 			if (data.success) {
-				setAllMessages(data.chat);
+				setReplyMessage("");
+				setReplyUser("");
+				setAllMessages(data.chats);
 			} else {
 				toast.error(
 					data.message ||
@@ -181,11 +348,9 @@ export default function ChatWindow({ chatPartner, partnerId = "" }) {
 	};
 
 	useEffect(() => {
-		if (chatPartner !== "") {
-			getAllMessage();
-			scrollDown("instant");
-		}
-	}, [chatPartner]);
+		getAllMessage();
+		scrollDown("instant");
+	}, [chatPartner, partnerId]);
 
 	useEffect(() => {
 		if (allMessages) {
@@ -204,11 +369,15 @@ export default function ChatWindow({ chatPartner, partnerId = "" }) {
 				replyText: replyMessage,
 				replyTo: replyUser,
 				text: targetMessage,
+				transactionAccepted: false,
 			};
 			if (allMessages) {
-				const updatedMessages = allMessages.messages
-					? [...allMessages.messages, newMess]
-					: [newMess];
+				const updatedMessages = {
+					...allMessages.messages,
+					[staffTarget]: allMessages.messages[staffTarget]
+						? [...allMessages.messages[staffTarget], newMess]
+						: [newMess],
+				};
 
 				const newChat = {
 					...allMessages,
@@ -231,8 +400,8 @@ export default function ChatWindow({ chatPartner, partnerId = "" }) {
 
 	const handleReply = (index) => {
 		if (allMessages) {
-			setReplyMessage(allMessages.messages[index].text);
-			setReplyUser(allMessages.messages[index].sender);
+			setReplyMessage(allMessages.messages[staffTarget][index].text);
+			setReplyUser(allMessages.messages[staffTarget][index].sender);
 		}
 	};
 
@@ -240,103 +409,63 @@ export default function ChatWindow({ chatPartner, partnerId = "" }) {
 		// setMessages(messages.filter((_, i) => i !== index));
 	};
 
-	interface Service {
-		id: number;
-		serviceName: string;
-		serviceURL: string;
-		serviceImg: string;
-		serviceDescription: string;
-	}
-
-	const AllTarget = {
-		// "DTI REGISTRATION": <DTIRegistration />,
-	};
-
-	const [formname, setFormName] = useState<string>();
-	const [showForm, setShowForm] = useState(false);
-	const [showDetails, setShowDetails] = useState(false);
-	const [targetForm, setTargetForm] = useState<ReactElement | null>(null);
-	const [formlink, setFormLink] = useState<string>("");
-	const [formid, setFormId] = useState<string>("");
-	const [formimg, setFormImg] = useState("");
-	const [description, setDescription] = useState("");
-
-	const [services, setServices] = useState<Service[]>();
-	const removeForm = () => {
-		setShowForm(false);
-		setTargetForm(null);
-	};
-
-	const getAllService = async () => {
-		try {
-			const data = await RequestHandler.handleRequest(
-				"post",
-				"service/get_services"
-			);
-
-			if (data.success) {
-				setServices(data.services);
-			} else {
-				toast.error(
-					data.message ||
-						"Reloading services failed, please check your credentials."
-				);
-			}
-		} catch (error) {
-			toast.error(`An error occurred. ${error}`);
-		}
-	};
-
-	useEffect(() => {
-		getAllService();
-	}, []);
-
-	const handleShowForm = (target, id, link) => {
-		setFormName(target);
-		setTargetForm(AllTarget[target] || null);
-		setFormLink(link);
-		setFormId(id);
-		setShowForm(true);
-	};
-
-	const handleShowDetailed = (target, image, desc) => {
-		setFormName(target);
-		setFormImg(image);
-		setDescription(desc);
-		setShowDetails(true);
-	};
-
 	return (
 		<>
 			<div className="chat-window">
 				<div className="chat-header">
-					<div>{chatPartner}</div>
+					<div>
+						{chatPartner == "" ? "ADMIN" : chatPartner}
+						{request
+							? " (" + request.Service.serviceName + ")"
+							: ""}
+					</div>
 				</div>
 				<div className="message-container">
 					{allMessages &&
-						allMessages.messages &&
-						allMessages.messages.length > 0 &&
-						allMessages.messages?.map((message, index) => (
-							<Message
-								key={index}
-								text={message.text}
-								isSent={message.sender == user.id}
-								replyText={message.replyText}
-								replyTo={
-									message.replyTo == user.id
-										? message.sender == user.id
-											? "yourself"
-											: "himself"
-										: chatPartner
-								}
-								onReply={() => handleReply(index)}
-								onDelete={() => handleDelete(index)}
-								chatPartner={chatPartner}
-								openForm={handleShowForm}
-							/>
-						))}
+						allMessages.messages[staffTarget] &&
+						allMessages.messages[staffTarget].length > 0 &&
+						allMessages.messages[staffTarget]?.map(
+							(message, index) => (
+								<Message
+									key={index}
+									user={request?.userId}
+									assignedEmployee={
+										staffId == "" ? user.id : staffId
+									}
+									request={request}
+									text={message.text}
+									isSent={message.sender == user.id}
+									replyText={message.replyText}
+									replyTo={
+										message.replyTo == user.id
+											? message.sender == user.id
+												? "yourself"
+												: "himself"
+											: chatPartner
+									}
+									onReply={() => handleReply(index)}
+									onDelete={() => handleDelete(index)}
+									chatPartner={chatPartner}
+									handleOpenModal={handleOpenModal}
+									updateMessage={updateMessage}
+								/>
+							)
+						)}
 					<div ref={messagesEndRef} />
 				</div>
+				{request && request.price != null && (
+					<div className="service-info">
+						<div>
+							<b>PAID AMOUNT:</b> ₱ {request.paidAmount}
+						</div>
+						<div>
+							<b>TOTAL PRICE:</b> ₱ {request.price}
+						</div>
+						<div>
+							<b>STATUS:</b> {request.status}
+						</div>
+					</div>
+				)}
 				{replyMessage && replyMessage !== "" ? (
 					<div className="reply-input">
 						<b>
@@ -355,49 +484,75 @@ export default function ChatWindow({ chatPartner, partnerId = "" }) {
 						onKeyDown={handleKeyDown}
 					/>
 
-					{user.id === "ADMIN" && (
-						<button className="offer" onClick={createOffer}>
-							Create Offer
-						</button>
-					)}
+					{user.isEmployee &&
+						request &&
+						request.price == null &&
+						staffTarget !== "staffadmin" && (
+							<button className="offer" onClick={createOffer}>
+								Create Offer
+							</button>
+						)}
+
+					{/* WHEN ALREADY ONGOING OR HAVE PRICE */}
+					{user.isEmployee &&
+						request &&
+						request.price != null &&
+						staffTarget !== "staffadmin" && (
+							<button
+								className="offer"
+								onClick={openAddProgressStepModal}
+							>
+								Update Progress
+							</button>
+						)}
+					{user.isEmployee &&
+						request &&
+						request.price != null &&
+						staffTarget !== "staffadmin" && (
+							<button className="offer">Complete</button>
+						)}
+					{!user.isEmployee &&
+						!user.isAdmin &&
+						request &&
+						request.price != null &&
+						staffTarget !== "staffadmin" && (
+							<button
+								className="offer"
+								onClick={() => setIstTransactionModal(true)}
+							>
+								Send Payment
+							</button>
+						)}
 					<button onClick={() => handleSendMessage()}>Send</button>
 				</div>
 
-				{isOfferModalOpen && (
+				{request && isOfferModalOpen && (
 					<div className="chat-offer-modal-overlay">
 						<div className="modal">
-							<h3>Create Offer</h3>
+							<h3>{request.Service.serviceName} OFFER</h3>
 							<label>
-								Service:
-								<select
-									value={selectedService}
-									onChange={(e) =>
-										setSelectedService(e.target.value)
-									}
-								>
-									<option value="" disabled>
-										Select a service
-									</option>
-									{services &&
-										services.map((service, index) => (
-											<option
-												key={index}
-												value={JSON.stringify(service)}
-											>
-												{service.serviceName}
-											</option>
-										))}
-								</select>
-							</label>
-							<label>
-								Price:
+								Downpayment:
 								<input
 									type="number"
-									value={price}
-									onChange={(e) => setPrice(e.target.value)}
-									placeholder="Enter price"
+									value={downpaymentPrice}
+									onChange={(e) =>
+										setDownpaymentPrice(e.target.value)
+									}
+									placeholder="Enter downpayment price"
 								/>
 							</label>
+							<label>
+								Total Price:
+								<input
+									type="number"
+									value={totalPrice}
+									onChange={(e) =>
+										setTotalPrice(e.target.value)
+									}
+									placeholder="Enter total price"
+								/>
+							</label>
+
 							<div className="modal-buttons">
 								<button
 									className="submit-button"
@@ -416,13 +571,21 @@ export default function ChatWindow({ chatPartner, partnerId = "" }) {
 					</div>
 				)}
 			</div>
-			{showForm && (
-				<FormMaker
-					removeForm={removeForm}
-					formComp={targetForm}
-					formName={formname}
-					formLink={formlink}
-					serviceId={formid}
+			{transactionModal && (
+				<TransactionModal
+					downpaymentPrice={downpaymentPrice}
+					totalPrice={totalPrice}
+					request={request}
+					onClose={handleCloseModal}
+					onSubmit={handleSubmit}
+				/>
+			)}
+			{isAddProgressStepModalOpen && request && (
+				<AddProgressStepModal
+					requestId={request.id}
+					isOpen={isAddProgressStepModalOpen}
+					onClose={closeAddProgressStepModal}
+					// onAddProgressStep={handleAddProgressStep}
 				/>
 			)}
 		</>

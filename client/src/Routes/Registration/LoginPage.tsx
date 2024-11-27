@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import "./Dashboard.scss";
 import Copyright from "../../Component/Copyright.tsx";
 
-import background from "../../Assets/background.png";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import RequestHandler from "../../Functions/RequestHandler.js";
+
+const background = require("../../Assets/background.png");
 
 export default function LoginPage() {
 	const navigate = useNavigate();
@@ -18,6 +19,9 @@ export default function LoginPage() {
 	});
 
 	const [requestInfo, setRequestInfo] = useState({
+		firstName: "",
+		lastName: "",
+		username: "",
 		email: "",
 		password: "",
 		confirmPassword: "",
@@ -60,6 +64,8 @@ export default function LoginPage() {
 					toast.success("Login successful!");
 					if (data.user.isAdmin) {
 						navigate("/admin");
+					} else if (data.user.isEmployee) {
+						navigate("/staff");
 					} else {
 						navigate("/client");
 					}
@@ -88,6 +94,9 @@ export default function LoginPage() {
 					"Request successful! Please wait for admin to verify your request"
 				);
 				setRequestInfo({
+					firstName: "",
+					lastName: "",
+					username: "",
 					email: "",
 					password: "",
 					confirmPassword: "",
@@ -164,6 +173,27 @@ export default function LoginPage() {
 							<center>Request Register</center>
 						</h1>
 
+						<input
+							name="firstName"
+							type="text"
+							placeholder="First Name"
+							onChange={handleRequestInfo}
+							value={requestInfo.firstName}
+						/>
+						<input
+							name="lastName"
+							type="text"
+							placeholder="Last Name"
+							onChange={handleRequestInfo}
+							value={requestInfo.lastName}
+						/>
+						<input
+							name="username"
+							type="text"
+							placeholder="Username"
+							onChange={handleRequestInfo}
+							value={requestInfo.username}
+						/>
 						<input
 							name="email"
 							type="text"

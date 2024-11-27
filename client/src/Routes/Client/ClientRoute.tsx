@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Dashboard from "./Dashboard.tsx";
@@ -6,29 +6,35 @@ import Chats from "./Chats.tsx";
 import About from "./About.tsx";
 import Services from "./Services.tsx";
 import Profile from "./Profile.tsx";
-import SubscriptionModal from "../../Component/Subscription.tsx";
 import { useNavigate } from "react-router-dom";
-import Navigation from "./Navigation.tsx";
+import ClientNavigation from "./Navigation.tsx";
 
-import "./Client.scss";
+import "./SCSS/Client.scss";
+import Transaction from "./Transaction.tsx";
+import PendingRequest from "./PendingRequest.tsx";
+import OngoingRequest from "./OngoingRequest.tsx";
+import CompletedRequest from "./CompletedRequest.tsx";
+import CancelledRequest from "./CancelledRequest.tsx";
+import { ToastContainer } from "react-toastify";
 
 export default function ClientRoute() {
-	const [isOpen, setIsOpen] = useState(false);
 	const navigate = useNavigate();
+	useEffect(() => {
+		if (localStorage.getItem("users") === null) {
+			sessionStorage.setItem("error-message", "Invalid User Token");
+			navigate("/");
+		}
+		sessionStorage.removeItem("error-message");
+	}, []);
+	const user = JSON.parse(localStorage.getItem("users") || "{}");
+
 	const changeURL = (url) => {
 		navigate(url);
 	};
 
 	return (
 		<div className="client">
-			{isOpen && (
-				<SubscriptionModal
-					onClose={() => {
-						setIsOpen(false);
-					}}
-				/>
-			)}
-			<Navigation setIsOpen={setIsOpen} />
+			<ClientNavigation />
 			<div className="client-content">
 				<Routes>
 					<Route
@@ -52,8 +58,46 @@ export default function ClientRoute() {
 						path="profile"
 						element={<Profile changeURL={changeURL} />}
 					/>
+					<Route
+						path="transaction"
+						element={
+							<Transaction user={user} changeURL={changeURL} />
+						}
+					/>
+
+					<Route
+						path="pending-request"
+						element={
+							<PendingRequest user={user} changeURL={changeURL} />
+						}
+					/>
+					<Route
+						path="ongoing-request"
+						element={
+							<OngoingRequest user={user} changeURL={changeURL} />
+						}
+					/>
+					<Route
+						path="completed-request"
+						element={
+							<CompletedRequest
+								user={user}
+								changeURL={changeURL}
+							/>
+						}
+					/>
+					<Route
+						path="cancelled-request"
+						element={
+							<CancelledRequest
+								user={user}
+								changeURL={changeURL}
+							/>
+						}
+					/>
 				</Routes>
 			</div>
+			<ToastContainer />
 		</div>
 	);
 }

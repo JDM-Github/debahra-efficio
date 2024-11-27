@@ -24,12 +24,24 @@
 			margin-bottom: 10px;
 
 			.topic-items {
-				aspect-ratio: 1;
+				// aspect-ratio: 1;
+				flex-grow: 1;
+				width: 440px;
 				height: 220px;
-				background-color: lightgray;
 				margin-right: 10px;
+				box-shadow: 0 0px 10px rgba(0, 0, 0, 0.1);
+			}
+			.topic-items2 {
+				position: relative;
+				display: grid;
+				grid-template-rows: repeat(2, 1fr);
+				width: 440px;
+				height: 220px;
+				margin-right: 10px;
+				gap: 10px;
 			}
 		}
+
 		.bottom-topic {
 			display: flex;
 			width: 100%;
@@ -38,8 +50,12 @@
 			.big-diagram {
 				width: 50%;
 				height: 100%;
-				background-color: lightgray;
+				background-color: white;
+				box-shadow: 0 5px 10px #00000044;
+				border-radius: 10px;
 				margin-right: 10px;
+				padding: 20px;
+				box-sizing: border-box;
 			}
 
 			.transactions {

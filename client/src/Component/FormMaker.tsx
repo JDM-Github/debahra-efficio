@@ -228,7 +228,7 @@ export default function FormMaker({
 				</div>
 
 				{isModalOpen && (
-					<div className="modal">
+					<div className="modal-form">
 						<div className="modal-content">
 							<span className="close" onClick={closeModal}>
 								&times;
@@ -247,6 +247,10 @@ export default function FormMaker({
 								href={formLink}
 								download
 								className="download-btn"
+								style={{
+									position: "relative",
+									width: "auto",
+								}}
 							>
 								DOWNLOAD
 							</a>

@@ -1,0 +1,81 @@
+.recent-transactions {
+	background-color: #385724;
+	padding: 10px 20px;
+	box-sizing: border-box;
+	border-radius: 10px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.recent-transactions h3 {
+	font-size: 20px;
+	font-weight: 600;
+	margin-bottom: 15px;
+	color: #ffffff;
+}
+
+.transaction-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.transaction-item {
+	display: flex;
+	justify-content: space-between;
+	padding: 10px;
+	border: 2px solid #71b146;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	font-weight: bold;
+}
+
+.transaction-item .transaction-date,
+.transaction-item .transaction-amount,
+.transaction-item .transaction-status {
+	font-size: 16px;
+	color: #ffffff;
+}
+
+.transaction-status {
+	padding: 0 10px;
+	width: 20%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.transaction-status.completeds {
+	color: #00ff3c;
+	text-shadow: #71b146;
+}
+
+.transaction-status.pendings {
+	color: #ffc107;
+}
+
+.transaction-status.processings {
+	color: #00e1ff;
+}
+
+.pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+	margin-top: 15px;
+}
+
+.pagination-icon {
+	font-size: 18px;
+	cursor: pointer;
+	color: #00ff80;
+}
+
+.pagination span {
+	font-size: 14px;
+	color: #ffffff;
+}

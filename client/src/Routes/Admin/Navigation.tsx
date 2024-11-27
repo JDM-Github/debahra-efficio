@@ -8,6 +8,13 @@ import {
 	faEnvelope,
 	faSignOutAlt,
 	faArchive,
+	faListAlt,
+	faMoneyCheckDollar,
+	faCheckCircle,
+	faSpinner,
+	faHourglassHalf,
+	faUserPlus,
+	faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 import Navigation from "../../Component/Navigation.tsx";
@@ -17,7 +24,6 @@ export default function AdminNavigation() {
 	return (
 		<Navigation
 			status={"ADMIN"}
-			subscribe={null}
 			Nav={
 				<>
 					<NavLink
@@ -59,12 +65,29 @@ export default function AdminNavigation() {
 						<div>Accounts</div>
 					</NavLink>
 					<NavLink
+						to="employee"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faEnvelope}
+							className="nav-icon"
+						/>
+						<div>Employee</div>
+					</NavLink>
+
+					<hr />
+					<NavLink
 						to="request-accounts"
 						className={({ isActive }) =>
 							isActive ? "nav-items active-link" : "nav-items"
 						}
 					>
-						<FontAwesomeIcon icon={faUser} className="nav-icon" />
+						<FontAwesomeIcon
+							icon={faUserPlus}
+							className="nav-icon"
+						/>
 						<div>Request Accounts</div>
 					</NavLink>
 
@@ -75,23 +98,76 @@ export default function AdminNavigation() {
 						}
 					>
 						<FontAwesomeIcon
-							icon={faEnvelope}
+							icon={faHourglassHalf}
 							className="nav-icon"
 						/>
-						<div>Requests</div>
+						<div>Pending Requests</div>
 					</NavLink>
 
 					<NavLink
-						to="appointment"
+						to="ongoing-request"
 						className={({ isActive }) =>
 							isActive ? "nav-items active-link" : "nav-items"
 						}
 					>
 						<FontAwesomeIcon
-							icon={faArchive}
+							icon={faSpinner}
 							className="nav-icon"
 						/>
-						<div>Appointment</div>
+						<div>Ongoing Requests</div>
+					</NavLink>
+
+					<NavLink
+						to="completed-request"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faCheckCircle}
+							className="nav-icon"
+						/>
+						<div>Completed Requests</div>
+					</NavLink>
+
+					<NavLink
+						to="cancelled-request"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faTimesCircle}
+							className="nav-icon"
+						/>
+						<div>Cancelled Requests</div>
+					</NavLink>
+
+					<hr />
+					<NavLink
+						to="transaction-history"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faMoneyCheckDollar}
+							className="nav-icon"
+						/>
+						<div>Transaction History</div>
+					</NavLink>
+
+					<NavLink
+						to="activity-log"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faListAlt} // Icon for Activity Log
+							className="nav-icon"
+						/>
+						<div>Activity Log</div>
 					</NavLink>
 
 					<NavLink

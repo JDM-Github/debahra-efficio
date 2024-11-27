@@ -1,0 +1,100 @@
+.revenue-analytics {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	background-color: #f5f9f4;
+	border-radius: 10px;
+	overflow: hidden;
+	color: #333;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+	.chart-bg {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+		background: linear-gradient(
+			325deg,
+			rgb(0, 0, 0),
+			rgba(85, 130, 53, 1),
+			black
+		);
+	}
+
+	.revenue-info {
+		position: relative;
+		z-index: 1;
+		padding: 0 20px;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		height: 100%;
+
+		.header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+
+			h3 {
+				font-size: 1.5rem;
+				color: #66ff00;
+			}
+
+			.time-period-select {
+				padding: 5px;
+				border-radius: 5px;
+				border: 1px solid #d3d3d3;
+				background: #fff;
+				color: #333;
+			}
+		}
+
+		.stats {
+			margin-top: auto;
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-end;
+			width: 100%;
+
+			.change {
+				position: absolute;
+				top: 90px;
+				font-size: 16px;
+				font-weight: bold;
+				&.up {
+					color: #ffffff;
+					text-shadow: 0 0 10px rgb(51, 255, 0);
+				}
+				&.down {
+					color: #e74c3c;
+					text-shadow: 0 0 10px rgb(255, 0, 0);
+				}
+
+				.icon {
+					margin-left: 8px;
+					&.up {
+						color: #71b146;
+					}
+					&.down {
+						color: #e74c3c;
+					}
+				}
+			}
+
+			.revenue-price {
+				position: absolute;
+				top: 40px;
+				left: 10px;
+				font-size: 36px;
+				font-weight: bold;
+				color: rgb(200, 255, 214);
+				position: absolute;
+				bottom: 20px;
+				right: 20px;
+				padding: 5px 10px;
+				border-radius: 5px;
+				text-shadow: 0 0 10px rgb(51, 255, 0);
+			}
+		}
+	}
+}

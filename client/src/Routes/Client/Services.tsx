@@ -2,12 +2,10 @@ import React, { ReactElement, useEffect, useState } from "react";
 import TopBar from "../../Component/TopBar.tsx";
 import Copyright from "../../Component/Copyright.tsx";
 import FormMaker from "../../Component/FormMaker.tsx";
-import "./Services.scss";
+import "./SCSS/Services.scss";
 
-import BookKeeping from "../../Forms/Bookkeeping.tsx";
-import DTIRegistration from "../../Forms/DTIRegistration.tsx";
 import RequestHandler from "../../Functions/RequestHandler.js";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Details from "../../Component/Details.tsx";
 
@@ -140,7 +138,6 @@ export default function Services({ changeURL }) {
 					</div>
 				</div>
 				<Copyright />
-				<ToastContainer />
 			</div>
 		</>
 	);

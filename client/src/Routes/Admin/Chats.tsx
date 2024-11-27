@@ -5,13 +5,23 @@ import ChatWindow from "../../Component/Chats.tsx";
 import "./SCSS/Chats.scss";
 
 import RequestHandler from "../../Functions/RequestHandler.js";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
-function TopNav() {
+function TopNav({ isEmployeeActive, setEmployeeActive }) {
 	return (
 		<div className="top-nav">
-			<button className="nav-btn active">Customer</button>
+			<button
+				className={`nav-btn ${isEmployeeActive ? "active" : ""}`}
+				onClick={() => setEmployeeActive(true)}
+			>
+				Staff
+			</button>
+			<button
+				className={`nav-btn ${!isEmployeeActive ? "active" : ""}`}
+				onClick={() => setEmployeeActive(false)}
+			>
+				Customer
+			</button>
 		</div>
 	);
 }
@@ -24,7 +34,7 @@ function SearchBar() {
 	);
 }
 
-function ChatList({ setChatSetup }) {
+function ChatList({ setChatSetup, isEmployeeActive }) {
 	interface Message {
 		text: string;
 	}
@@ -45,10 +55,12 @@ function ChatList({ setChatSetup }) {
 			try {
 				const data = await RequestHandler.handleRequest(
 					"post",
-					"chats/get-chat"
+					"chats/get-chat",
+					{ isEmployee: isEmployeeActive }
 				);
 
 				if (data.success) {
+					// alert(JSON.stringify(data.chats));
 					setChats(data.chats);
 				} else {
 					toast.error(
@@ -62,7 +74,7 @@ function ChatList({ setChatSetup }) {
 		};
 
 		fetchChats();
-	}, []);
+	}, [isEmployeeActive]);
 
 	return (
 		<div className="chat-list">
@@ -77,7 +89,6 @@ function ChatList({ setChatSetup }) {
 							alt="Profile"
 							className="profile-pic"
 						/>
-						``
 						<div
 							className="chat-info"
 							onClick={() =>
@@ -91,9 +102,12 @@ function ChatList({ setChatSetup }) {
 								{chat.User.username}
 							</div>
 							<div className="chat-last-message">
-								{chat.messages && chat.messages.length > 0
-									? chat.messages[chat.messages.length - 1]
-											.text
+								{chat.messages["staffadmin"] &&
+								chat.messages["staffadmin"].length > 0
+									? chat.messages["staffadmin"][
+											chat.messages["staffadmin"].length -
+												1
+									  ].text
 									: "No messages yet..."}
 							</div>
 						</div>
@@ -104,21 +118,28 @@ function ChatList({ setChatSetup }) {
 }
 
 function ChatContainer({ setChatSetup }) {
+	const [isEmployeeActive, setEmployeeActive] = useState(false);
 	return (
 		<div className="chat-container">
-			<TopNav />
+			<TopNav
+				isEmployeeActive={isEmployeeActive}
+				setEmployeeActive={setEmployeeActive}
+			/>
 			<SearchBar />
-			<ChatList setChatSetup={setChatSetup} />
+			<ChatList
+				setChatSetup={setChatSetup}
+				isEmployeeActive={isEmployeeActive}
+			/>
 		</div>
 	);
 }
 
 export default function Chats() {
-	interface ChatSeup {
+	interface ChatSetup {
 		chatPartner: string;
 		partnerId: string;
 	}
-	const [chatSetup, setChatSetup] = useState<ChatSeup>();
+	const [chatSetup, setChatSetup] = useState<ChatSetup>();
 	return (
 		<div className="chats">
 			<TopBar clickHandler={null} />
@@ -128,11 +149,11 @@ export default function Chats() {
 					<ChatWindow
 						chatPartner={chatSetup.chatPartner}
 						partnerId={chatSetup.partnerId}
+						staffId="admin"
 					/>
 				)}
 			</div>
 			<Copyright />
-			<ToastContainer />
 		</div>
 	);
 }

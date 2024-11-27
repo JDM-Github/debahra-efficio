@@ -20,7 +20,7 @@ function SearchInput() {
 	);
 }
 
-export default function Navigation({ status, Nav, setIsOpen }) {
+export default function Navigation({ status, Nav }) {
 	const navigate = useNavigate();
 	useEffect(() => {
 		if (localStorage.getItem("users") === null) {
@@ -43,24 +43,11 @@ export default function Navigation({ status, Nav, setIsOpen }) {
 					<div className={`name`}>
 						{user.firstname
 							? user.firstname + " " + user.lastname
-							: user.username}
+							: "ADMINISTRATOR"}
 					</div>
 					<div className="position">{status}</div>
 				</div>
 			</div>
-
-			<>
-				{/* {setIsOpen && (
-					<div
-						className={`subscribe ${user.membership}`}
-						onClick={() => setIsOpen(true)}
-					>
-						{user.membership === "MEMBER"
-							? "SUBSCRIBE"
-							: user.membership}
-					</div>
-				)} */}
-			</>
 
 			<hr
 				style={{
@@ -71,7 +58,7 @@ export default function Navigation({ status, Nav, setIsOpen }) {
 				}}
 			/>
 
-			<SearchInput />
+			{/* <SearchInput /> */}
 			<>{Nav}</>
 		</div>
 	);

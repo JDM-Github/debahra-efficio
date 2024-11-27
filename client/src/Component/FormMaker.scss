@@ -4,7 +4,7 @@
 	justify-content: center;
 	align-items: center;
 	position: absolute;
-	top: -20vh;
+	top: -10vh;
 	width: calc(100vw - 250px);
 	height: 120vh;
 	background-color: rgba(0, 0, 0, 0.5);
@@ -15,7 +15,6 @@
 
 	.form-card {
 		padding: 20px;
-		padding-top: 10px;
 		width: 40%;
 		height: auto;
 		background-color: #385724;
@@ -224,12 +223,12 @@
 			cursor: pointer;
 		}
 
-		.modal {
+		.modal-form {
 			position: absolute;
-			z-index: 1000;
+			z-index: 99;
 			left: 50%;
 			top: 50%;
-			width: 100vw;
+			width: 150vw;
 			height: 100vh;
 			background-color: #00000077;
 			display: flex;
@@ -239,6 +238,7 @@
 
 			.modal-content {
 				position: relative;
+				width: auto;
 				background-color: #fff;
 				padding: 20px;
 				border-radius: 8px;
@@ -285,6 +285,5 @@
 		position: relative;
 		width: 30%;
 		height: 80%;
-		background-color: red;
 	}
 }

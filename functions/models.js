@@ -1,17 +1,9 @@
 require("dotenv").config();
 const pg = require("pg");
-const {
-	Sequelize,
-	DataTypes,
-	BOOLEAN,
-	STRING,
-	DATE,
-	DECIMAL,
-	Transaction,
-} = require("sequelize");
+const { Sequelize, DataTypes } = require("sequelize");
 
 const sequelize = new Sequelize(
-	"postgresql://efficio:qH53-TmtuwcH5M6q2PcoMA@efficio-database-2274.jxf.gcp-asia-southeast1.cockroachlabs.cloud:26257/efficio?sslmode=verify-full",
+	"postgresql://jdm:gA00MXJG6XdxLl7tZvCuEA@jdm-master-15017.7tt.aws-us-east-1.cockroachlabs.cloud:26257/efficio?sslmode=verify-full",
 	{
 		dialect: "postgres",
 		dialectModule: pg,
@@ -23,81 +15,6 @@ const sequelize = new Sequelize(
 		},
 	}
 );
-
-// User:
-// 	id INT
-// 	username STRING
-// 	firstname STRING
-// 	lastname STRING
-// 	email STRING
-// 	password STRING
-// 	location STRING
-// 	membership STRING
-// 	membershipExpire DATE;
-// 	isAdmin BOOLEAN
-// 	createdAt DATE
-// 	updatedAt DATE
-
-// MembershipTransaction:
-// 	id INT
-// 	membershipType STRING
-// 	price DECIMAL
-// 	createdAt DATE
-// 	updatedAt DATE
-
-// AllUserRequest:
-// 	id INT
-// 	userId INT
-// 	password STRING
-// 	isVerified BOOLEAN
-// 	createdAt DATE
-// 	updatedAt DATE
-
-// Service:
-// 	id INT
-// 	serviceName STRING
-// 	serviceForm JSON
-// 	servicePrice DECIMAL // di sure toh kase sabe membership
-// 	createdAt DATE
-// 	updatedAt DATE
-
-// Request:
-// 	id INT
-// 	userId INT
-// 	serviceId INT
-// 	status STRING
-// 	isArchived BOOLEAN
-// 	createdAt DATE
-// 	updatedAt DATE
-
-// Appointment:
-// 	id INT
-// 	requestId INT
-// 	appointmentDate DATE
-// 	status STRING
-// 	createdAt DATE
-// 	updatedAt DATE
-
-// Notification:
-// 	id INT
-// 	userId INT
-// 	message STRING
-// 	notificationType STRING
-// 	createdAt DATE
-// 	updatedAt DATE
-
-// Chat:
-// 	id INT
-// 	userId INT
-// 	messages JSON
-// 	createdAt DATE
-// 	updatedAt DATE
-
-// Transaction:
-// 	id INT
-// 	requestId STRING
-// 	createdAt DATE
-// 	updatedAt DATE
 
 const Chat = sequelize.define(
 	"Chat",
@@ -144,10 +61,12 @@ const User = sequelize.define(
 		password: { type: DataTypes.STRING, allowNull: false },
 
 		location: { type: DataTypes.STRING, defaultValue: "" },
-		membership: { type: DataTypes.STRING, defaultValue: "MEMBER" },
-		membershipExpire: { type: DataTypes.DATE, defaultValue: null },
-
 		isAdmin: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: false,
+			allowNull: false,
+		},
+		isEmployee: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: false,
 			allowNull: false,
@@ -158,7 +77,43 @@ const User = sequelize.define(
 	}
 );
 
+const Employee = sequelize.define("Employee", {
+	userId: {
+		type: DataTypes.INTEGER,
+		allowNull: false,
+		unique: true,
+		references: {
+			model: "Users",
+			key: "id",
+		},
+	},
+	assignedUser: {
+		type: DataTypes.ARRAY(DataTypes.INTEGER),
+		allowNull: true,
+		defaultValue: [],
+	},
+	description: {
+		type: DataTypes.STRING,
+		defaultValue: "",
+	},
+	numberHandledUser: {
+		type: DataTypes.INTEGER,
+		defaultValue: 0,
+	},
+});
+
 const AllUserRequest = sequelize.define("VerifiedUser", {
+	username: { type: DataTypes.STRING, allowNull: false },
+	firstname: {
+		type: DataTypes.STRING,
+		allowNull: false,
+		defaultValue: "",
+	},
+	lastname: {
+		type: DataTypes.STRING,
+		allowNull: false,
+		defaultValue: "",
+	},
 	email: { type: DataTypes.STRING, allowNull: false, unique: true },
 	password: { type: DataTypes.STRING, allowNull: false, defaultValue: "" },
 	isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
@@ -214,15 +169,48 @@ const Request = sequelize.define(
 			allowNull: true,
 			defaultValue: "",
 		},
-
+		assignedEmployee: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
+			unique: true,
+			references: {
+				model: "Employees",
+				key: "id",
+			},
+		},
+		progress: {
+			type: DataTypes.ARRAY(DataTypes.STRING),
+			allowNull: null,
+			defaultValue: [],
+		},
 		status: {
 			type: DataTypes.STRING,
 			allowNull: false,
 			defaultValue: "ONGOING",
 		},
+		price: {
+			type: DataTypes.DECIMAL,
+			allowNull: true,
+			defaultValue: null,
+		},
+		paidAmount: {
+			type: DataTypes.DECIMAL,
+			allowNull: true,
+			defaultValue: null,
+		},
 		isArchived: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: false,
+		},
+		cancelledAt: {
+			type: DataTypes.DATE,
+			defaultValue: null,
+			allowNull: true,
+		},
+		completedAt: {
+			type: DataTypes.DATE,
+			defaultValue: null,
+			allowNull: true,
 		},
 		isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
 	},
@@ -257,25 +245,90 @@ const Appointment = sequelize.define(
 	}
 );
 
-// const Notification = sequelize.define(
-// 	"Notification",
-// 	{
-// 		userId: {
-// 			type: DataTypes.INTEGER,
-// 			allowNull: false,
-// 			unique: true,
-// 			references: {
-// 				model: "Users",
-// 				key: "id",
-// 			},
-// 		},
-// 		messages: { type: DataTypes.STRING, allowNull: false },
-// 		notificationType: { type: DataTypes.STRING, allowNull: false },
-// 	},
-// 	{
-// 		timestamps: true,
-// 	}
-// );
+const Transaction = sequelize.define(
+	"Transaction",
+	{
+		userId: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			references: {
+				model: "Users",
+				key: "id",
+			},
+		},
+		assignedEmployee: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
+			references: {
+				model: "Employees",
+				key: "id",
+			},
+		},
+		requestId: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			references: {
+				model: "Requests",
+				key: "id",
+			},
+		},
+		typeOfTransaction: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		amount: {
+			type: DataTypes.DECIMAL,
+			allowNull: false,
+		},
+		uploadedProof: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		referenceNumber: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+	},
+	{
+		timestamps: true,
+	}
+);
+
+const ActivityLog = sequelize.define(
+	"ActivityLog",
+	{
+		message: { type: DataTypes.STRING, allowNull: false },
+	},
+	{
+		timestamps: true,
+	}
+);
+
+const Notification = sequelize.define(
+	"Notification",
+	{
+		userId: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			unique: true,
+			references: {
+				model: "Users",
+				key: "id",
+			},
+		},
+		messages: { type: DataTypes.STRING, allowNull: false },
+		notificationType: { type: DataTypes.STRING, allowNull: false },
+	},
+	{
+		timestamps: true,
+	}
+);
+
+User.hasMany(Notification, { foreignKey: "userId" });
+Notification.belongsTo(User, { foreignKey: "userId" });
+
+User.hasMany(Employee, { foreignKey: "userId" });
+Employee.belongsTo(User, { foreignKey: "userId" });
 
 User.hasMany(Chat, { foreignKey: "userId" });
 Chat.belongsTo(User, { foreignKey: "userId" });
@@ -286,8 +339,32 @@ Request.belongsTo(User, { foreignKey: "userId" });
 Service.hasMany(Request, { foreignKey: "serviceRequestId" });
 Request.belongsTo(Service, { foreignKey: "serviceRequestId" });
 
+Employee.hasMany(Request, { foreignKey: "assignedEmployee" });
+Request.belongsTo(Employee, { foreignKey: "assignedEmployee" });
+
 Request.hasMany(Appointment, { foreignKey: "requestId" });
 Appointment.belongsTo(Request, { foreignKey: "requestId" });
+
+User.hasMany(Transaction, {
+	foreignKey: "userId",
+});
+Transaction.belongsTo(User, {
+	foreignKey: "userId",
+});
+
+Employee.hasMany(Transaction, {
+	foreignKey: "assignedEmployee",
+});
+Transaction.belongsTo(Employee, {
+	foreignKey: "assignedEmployee",
+});
+
+Request.hasMany(Transaction, {
+	foreignKey: "requestId",
+});
+Transaction.belongsTo(Request, {
+	foreignKey: "requestId",
+});
 
 module.exports = {
 	Chat,
@@ -296,5 +373,8 @@ module.exports = {
 	Service,
 	Request,
 	Appointment,
+	Employee,
+	Transaction,
+	ActivityLog,
 	sequelize,
 };

@@ -15,6 +15,9 @@ const {
 	Service,
 	Request,
 	Appointment,
+	Employee,
+	Transaction,
+	ActivityLog,
 } = require("./models");
 
 cloudinary.config({
@@ -50,6 +53,36 @@ async function uploadToCloudinary(buffer) {
 //     });
 // };
 
+async function createChatDict(messages) {
+	const chatList = [];
+
+	for (const key in messages) {
+		const staffId = key.replace("staff", "");
+		if (staffId == "admin") continue;
+		const user = await User.findByPk(staffId, {
+			attributes: [
+				"id",
+				"username",
+				"firstname",
+				"lastname",
+				"profileImg",
+			],
+		});
+		if (user) {
+			const chatEntry = {
+				ids: staffId,
+				profilePic: user.profileImg,
+				username: user.username,
+				firstname: user.firstname,
+				lastname: user.lastname,
+				messages: messages[key],
+			};
+			chatList.push(chatEntry);
+		}
+	}
+	return chatList;
+}
+
 class ChatRouter {
 	constructor() {
 		this.router = express.Router();
@@ -60,6 +93,14 @@ class ChatRouter {
 		this.router.post("/user", expressAsyncHandler(this.getChatByUser));
 		this.router.post("/send-chat", expressAsyncHandler(this.updateChats));
 		this.router.post("/get-chat", expressAsyncHandler(this.getAllChats));
+		this.router.post(
+			"/get-chat-employee",
+			expressAsyncHandler(this.getChatsForAssignedUsers)
+		);
+		this.router.post(
+			"/get-chat-user",
+			expressAsyncHandler(this.getChatsForAssignedStaff)
+		);
 		// this.router.post(
 		//  "/user/:id",
 		//  upload.single("image"),
@@ -76,10 +117,61 @@ class ChatRouter {
 		// );
 	}
 
+	async getChatsForAssignedUsers(req, res) {
+		const { employeeId } = req.body;
+		try {
+			const employee = await Employee.findOne({
+				where: { userId: employeeId },
+			});
+			if (!employee) {
+				throw new Error("Employee not found");
+			}
+			const assignedUserIds = employee.assignedUser;
+			const chats = await Chat.findAll({
+				where: {
+					userId: {
+						[Op.in]: assignedUserIds,
+					},
+				},
+				include: [
+					{
+						model: User,
+						attributes: ["username", "email"],
+					},
+				],
+			});
+			res.send({ success: true, chats });
+		} catch (error) {
+			res.send({
+				success: false,
+				message: `Error getting chats for assigned users: ${error}`,
+			});
+		}
+	}
+
+	async getChatsForAssignedStaff(req, res) {
+		const { id } = req.body;
+		try {
+			const chats = await Chat.findOne({
+				where: { userId: id },
+			});
+			const chatList = await createChatDict(chats.messages);
+			res.send({ success: true, chats: chatList });
+		} catch (error) {
+			res.send({
+				success: false,
+				message: `Error getting chats for assigned users: ${error}`,
+			});
+		}
+	}
+
 	async getChatByUser(req, res) {
 		const { id } = req.body;
+
 		let chat = await Chat.findOne({
-			where: { userId: id },
+			where: {
+				userId: id,
+			},
 			include: [
 				{
 					model: User,
@@ -88,18 +180,44 @@ class ChatRouter {
 			],
 		});
 
-		if (!chat) {
-			await Chat.create({ userId: id, messages: [] });
-			const user = await User.findOne({ where: { id } });
-			chat = {
-				userId: id,
-				messages: [],
-				username: user.username,
-				email: user.email,
-			};
+		if (chat) {
+			res.send({
+				success: true,
+				chats: chat,
+			});
+		} else {
+			res.send({
+				success: false,
+				message: "Chat not found for the specified user.",
+			});
 		}
-		res.send({ success: true, chat });
 	}
+
+	// async chatToAdmin(req, res) {
+	// 	const { id } = req.body;
+	// 	let chat = await Chat.findOne({
+	// 		where: { userId: id },
+	// 		include: [
+	// 			{
+	// 				model: User,
+	// 				attributes: ["username", "email"],
+	// 			},
+	// 		],
+	// 	});
+
+	// 	if (!chat) {
+	// 		await Chat.create({ userId: id, messages: [] });
+	// 		const user = await User.findOne({ where: { id } });
+	// 		chat = {
+	// 			userId: id,
+	// 			messages: [],
+	// 			username: user.username,
+	// 			email: user.email,
+	// 		};
+	// 		console.log(chat);
+	// 	}
+	// 	res.send({ success: true, chat });
+	// }
 
 	async updateChats(req, res) {
 		const { oldChat } = req.body;
@@ -108,12 +226,12 @@ class ChatRouter {
 		});
 
 		if (!chat) res.send({ success: true, message: "No Chat to update." });
-
 		await chat.update({ messages: oldChat.messages });
 		res.send({ success: true, chat });
 	}
 
 	async getAllChats(req, res) {
+		const { isEmployee } = req.body;
 		const chats = await Chat.findAll({
 			where: {
 				messages: {
@@ -122,10 +240,13 @@ class ChatRouter {
 			},
 			include: {
 				model: User,
-				attributes: ["username"],
+				attributes: ["username", "isEmployee"],
 			},
 		});
-		res.send({ success: true, chats });
+		const filteredChats = chats.filter(
+			(chat) => chat.User.isEmployee === isEmployee
+		);
+		res.send({ success: true, chats: filteredChats });
 	}
 
 	async postUserMessage(req, res) {
@@ -289,12 +410,49 @@ class RequestRouter {
 			expressAsyncHandler(this.requestDocument)
 		);
 		this.router.post(
+			"/upload-image",
+			upload.single("file"),
+			expressAsyncHandler(this.uploadImageToCloudinary)
+		);
+		this.router.post(
 			"/get_request",
 			expressAsyncHandler(this.getAllRequest)
 		);
 		this.router.post(
+			"/get_request_ongoing",
+			expressAsyncHandler(this.getAllOngoingRequest)
+		);
+		// this.router.post(
+		// 	"/get_request_ongoing_user",
+		// 	expressAsyncHandler(this.getAllOngoingRequestUser)
+		// );
+		this.router.post(
+			"/get_request_completed",
+			expressAsyncHandler(this.getAllCompletedRequest)
+		);
+		this.router.post(
+			"/get_all_transaction",
+			expressAsyncHandler(this.getAllTransaction)
+		);
+		this.router.post(
+			"/get_all_assigned_user",
+			expressAsyncHandler(this.getAllAssignedUser)
+		);
+		this.router.post(
+			"/get_all_transaction_user",
+			expressAsyncHandler(this.getAllTransactionUser)
+		);
+		this.router.post(
+			"/get_all_activity",
+			expressAsyncHandler(this.getAllActivityLog)
+		);
+		this.router.post(
 			"/view_service",
 			expressAsyncHandler(this.viewService)
+		);
+		this.router.post(
+			"/view_user_service",
+			expressAsyncHandler(this.viewUserService)
 		);
 		this.router.post(
 			"/set_archived",
@@ -304,6 +462,20 @@ class RequestRouter {
 			"/accept_request",
 			expressAsyncHandler(this.acceptRequest)
 		);
+		this.router.post(
+			"/add-transaction",
+			expressAsyncHandler(this.addToTransaction)
+		);
+		this.router.post(
+			"/add-progress",
+			expressAsyncHandler(this.addProgressStep)
+		);
+		this.router.post(
+			"/check-confirm-transaction",
+			expressAsyncHandler(this.confirmRequest)
+		);
+		//
+		//
 	}
 
 	async setArchived(req, res) {
@@ -343,6 +515,16 @@ class RequestRouter {
 			const { id, appointmentData } = req.body;
 			const request = await Request.findOne({
 				where: { id },
+				include: [
+					{
+						model: User,
+						attributes: ["id", "firstname", "lastname"],
+					},
+					{
+						model: Service,
+						attributes: ["serviceName"],
+					},
+				],
 			});
 
 			if (!request) {
@@ -351,19 +533,86 @@ class RequestRouter {
 					message: "Request not found",
 				});
 			}
-			await request.update({ isVerified: true });
-			await Appointment.create({
-				requestId: id,
-				appointmentDate: new Date(appointmentData.date),
-				status: "ONGOING",
-				appointmentPeople: appointmentData.people,
-				appointmentNotes: appointmentData.notes,
+
+			const user = await Employee.findOne({
+				where: { userId: appointmentData.staffId },
+				include: [
+					{
+						model: User,
+						attributes: ["id", "firstname", "lastname", "username"],
+					},
+				],
 			});
 
-			res.json({
+			if (!user) {
+				return res.status(404).send({
+					success: false,
+					message: "Employee not found",
+				});
+			}
+
+			const targetUser = await User.findOne({
+				where: { id: request.userId },
+			});
+
+			if (!targetUser) {
+				return res.status(404).send({
+					success: false,
+					message: "User not found",
+				});
+			}
+
+			if (!user.assignedUser.includes(targetUser.id)) {
+				await user.update({
+					assignedUser: [...user.assignedUser, targetUser.id],
+				});
+			}
+
+			let chat = await Chat.findOne({
+				where: { userId: targetUser.id },
+			});
+
+			const welcomeMessage = `Hello, ${targetUser.firstname} ${targetUser.lastname} (${targetUser.username})!\n\nI am ${user.User.firstname} ${user.User.lastname}.\nYou can just call me ${user.User.username}. I will be your chat partner for this request.\n\nFeel free to reach out with any questions about your request!`;
+
+			if (!chat) {
+				chat = await Chat.create({
+					userId: targetUser.id,
+					messages: {
+						staffadmin: [],
+						[`staff${user.User.id}`]: [
+							{
+								sender: user.User.id,
+								text: welcomeMessage,
+								replyText: "",
+								replyTo: "",
+							},
+						],
+					},
+				});
+			}
+
+			await request.update({
+				isVerified: true,
+				assignedEmployee: user.id,
+				status: "VERIFIED",
+				isVerified: true,
+				progress: [
+					...(request.progress || []),
+					{
+						label: "REQUEST VERIFIED",
+						details: `Request ${id} has been verified for service "${request.Service.serviceName}" by user ${request.User.firstname} ${request.User.lastname}.`,
+					},
+				],
+			});
+
+			await ActivityLog.create({
+				message: `${targetUser.firstname} ${targetUser.lastname} (${targetUser.username}) request has been verified. Assigned to ${user.User.firstname} ${user.User.lastname}`,
+			});
+
+			res.send({
 				success: true,
 				message:
-					"The request is successfully sent. The appointment was sent!",
+					"The request is successfully verified. The staff was assigned!",
 			});
 		} catch (error) {
 			console.error("Error fetching requests:", error);
@@ -380,6 +629,42 @@ class RequestRouter {
 		try {
 			const request = await Request.findOne({ where: { id } });
 
+			res.send({
+				success: true,
+				data: request,
+			});
+		} catch (error) {
+			res.send({
+				success: false,
+				message: `An error occurred while viewing the request. ${error}`,
+			});
+		}
+	}
+
+	async viewUserService(req, res) {
+		const { userId, staffId } = req.body;
+
+		const whereClause = {};
+		if (userId !== undefined && userId !== null)
+			whereClause["userId"] = userId;
+		if (staffId !== undefined && staffId !== null) {
+			const user = await Employee.findOne({
+				where: { userId: staffId },
+			});
+			console.log(user);
+			console.log(staffId);
+			whereClause["assignedEmployee"] = user.id;
+		}
+		try {
+			const request = await Request.findOne({
+				where: whereClause,
+				include: [
+					{
+						model: Service,
+						attributes: ["serviceName"],
+					},
+				],
+			});
 			res.send({
 				success: true,
 				data: request,
@@ -426,7 +711,6 @@ class RequestRouter {
 				serviceRequestId: serviceId,
 				uploadedDocument: uploadedUrl,
 			});
-			``;
 			res.send({
 				success: true,
 				message: `Service request: "${serviceName}" was sent successfully. Please wait for further notice.`,
@@ -435,6 +719,421 @@ class RequestRouter {
 			res.send({
 				success: false,
 				message: `An error occurred while creating the request. ${error.message}`,
+			});
+		}
+	}
+
+	async uploadImageToCloudinary(req, res) {
+		const serviceFile = req.file;
+
+		try {
+			const uploadedUrl = await uploadToCloudinary(serviceFile.buffer);
+			console.log(uploadedUrl);
+			res.send({
+				success: true,
+				uploadedDocument: uploadedUrl,
+			});
+		} catch (error) {
+			res.send({
+				success: false,
+				message: `An error occurred while creating the request. ${error.message}`,
+			});
+		}
+	}
+
+	// add-transaction
+	async addToTransaction(req, res) {
+		try {
+			const {
+				userId,
+				assignedEmployee,
+				requestId,
+				typeOfTransaction,
+				referenceNumber,
+				uploadedProof,
+				amount,
+				totalPrice,
+			} = req.body;
+
+			console.log({
+				userId,
+				assignedEmployee,
+				requestId,
+				typeOfTransaction,
+				referenceNumber,
+				uploadedProof,
+				amount,
+				totalPrice,
+			});
+
+			let transaction = await Transaction.findOne({
+				where: { referenceNumber },
+			});
+			if (transaction) {
+				res.send({
+					success: false,
+					message: `The reference on this transaction is already been used.`,
+				});
+				return;
+			}
+
+			const employee = await Employee.findOne({
+				where: { userId: assignedEmployee },
+			});
+			if (!employee) {
+				res.send({
+					success: false,
+					message: `Employee not found.`,
+				});
+				return;
+			}
+
+			transaction = await Transaction.create({
+				userId,
+				assignedEmployee: employee.id,
+				requestId,
+				typeOfTransaction,
+				referenceNumber,
+				uploadedProof,
+				amount,
+			});
+
+			const message = `Transaction ${typeOfTransaction} for User ID ${userId} (Ref: ${referenceNumber}) - Amount: ₱${amount}. Assigned to Employee ID: ${
+				employee.id
+			}. Proof: ${uploadedProof ? "Uploaded" : "Not Uploaded"}`;
+			await ActivityLog.create({
+				message: message,
+			});
+
+			const request = await Request.findByPk(requestId);
+			if (!request) {
+				res.send({
+					success: false,
+					message: `Request not found.`,
+				});
+			}
+			await request.update({
+				price: parseFloat(totalPrice),
+				paidAmount: parseFloat(request.paidAmount) + parseFloat(amount),
+				progress: [
+					...request.progress,
+					typeOfTransaction === "downpayment"
+						? {
+								label: "ADD DOWN PAYMENT",
+								details: `User added a down payment of ₱${amount} for request ${requestId}.`,
+						  }
+						: parseFloat(request.paidAmount) + parseFloat(amount) >=
+						  parseFloat(totalPrice)
+						? {
+								label: "FULL PAID SERVICE",
+								details: `User has fully paid the service with a total of ₱${
+									parseFloat(request.paidAmount) +
+									parseFloat(amount)
+								}.`,
+						  }
+						: {
+								label: "ADD PARTIAL PAYMENT",
+								details: `User added a partial payment of ₱${amount} for request ${requestId}.`,
+						  },
+				],
+			});
+
+			res.send({
+				success: true,
+				data: transaction,
+			});
+		} catch (error) {
+			res.send({
+				success: false,
+				message: `An error occurred while creating the transaction. ${error.message}`,
+			});
+			console.log(error.message);
+		}
+	}
+
+	async addProgressStep(req, res) {
+		try {
+			const { requestId, step } = req.body;
+			const request = await Request.findByPk(requestId);
+			if (!request) {
+				res.send({
+					success: false,
+					message: `Request not found.`,
+				});
+			}
+			await request.update({
+				progress: [...request.progress, step],
+			});
+			console.log(request.progress);
+			res.send({ success: true });
+		} catch (error) {
+			res.send({
+				success: false,
+				message: `An error occurred while creating the progress step. ${error.message}`,
+			});
+			console.log(error.message);
+		}
+	}
+
+	async getAllActivityLog(req, res) {
+		try {
+			const { currPage, limit } = req.body;
+
+			if (!currPage || !limit) {
+				return res.status(400).json({
+					success: false,
+					message: "Pagination parameters are required",
+				});
+			}
+
+			const whereClause = {};
+			const offset = (currPage - 1) * limit;
+			const requests = await ActivityLog.findAndCountAll({
+				where: whereClause,
+				limit: limit,
+				offset: offset,
+				order: [["createdAt", "DESC"]],
+			});
+
+			res.json({
+				success: true,
+				data: requests.rows,
+				total: requests.count,
+				currentPage: currPage,
+				totalPages: Math.ceil(requests.count / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching account requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching requests",
+			});
+		}
+	}
+	// get_all_transaction_user
+	async getAllTransactionUser(req, res) {
+		try {
+			const { id, assignedEmployee, currPage, limit } = req.body;
+
+			if (!currPage || !limit) {
+				return res.status(400).json({
+					success: false,
+					message: "Pagination parameters are required",
+				});
+			}
+
+			const whereClause = {};
+			if (id !== undefined && id !== null) {
+				whereClause["userId"] = id;
+			}
+			if (assignedEmployee !== undefined && assignedEmployee !== null) {
+				const employee = await Employee.findOne({
+					where: { userId: assignedEmployee },
+				});
+				whereClause["assignedEmployee"] = employee.id;
+			}
+			const offset = (currPage - 1) * limit;
+			const requests = await Transaction.findAndCountAll({
+				where: whereClause,
+				attributes: { exclude: [] },
+				include: [
+					{
+						model: User,
+						attributes: [
+							"firstname",
+							"lastname",
+							"email",
+							"profileImg",
+							"username",
+							"location",
+						],
+					},
+					{
+						model: Employee,
+						include: [
+							{
+								model: User,
+								attributes: ["firstname", "lastname"],
+							},
+						],
+					},
+					{
+						model: Request,
+						attributes: { exclude: [] },
+						include: [
+							{ model: Service, attributes: ["serviceName"] },
+						],
+					},
+				],
+				limit: limit,
+				offset: offset,
+				order: [["createdAt", "DESC"]],
+			});
+
+			res.json({
+				success: true,
+				data: requests.rows,
+				total: requests.count,
+				currentPage: currPage,
+				totalPages: Math.ceil(requests.count / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching account requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching requests",
+			});
+		}
+	}
+
+	async getAllTransaction(req, res) {
+		try {
+			const { currPage, limit, isArchived } = req.body;
+
+			if (!currPage || !limit) {
+				return res.status(400).json({
+					success: false,
+					message: "Pagination parameters are required",
+				});
+			}
+
+			const whereClause = {};
+			const offset = (currPage - 1) * limit;
+			const requests = await Transaction.findAndCountAll({
+				where: whereClause,
+				attributes: { exclude: [] },
+				include: [
+					{
+						model: User,
+						attributes: ["firstname", "lastname", "email"],
+					},
+					{
+						model: Employee,
+						include: [
+							{
+								model: User,
+								attributes: ["firstname", "lastname"],
+							},
+						],
+					},
+					{
+						model: Request,
+						attributes: { exclude: [] },
+						include: [
+							{ model: Service, attributes: ["serviceName"] },
+						],
+					},
+				],
+				limit: limit,
+				offset: offset,
+				order: [["createdAt", "DESC"]],
+			});
+
+			res.json({
+				success: true,
+				data: requests.rows,
+				total: requests.count,
+				currentPage: currPage,
+				totalPages: Math.ceil(requests.count / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching account requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching requests",
+			});
+		}
+	}
+
+	async getAllAssignedUser(req, res) {
+		try {
+			const { id, currPage, limit } = req.body;
+
+			if (!currPage || !limit) {
+				return res.status(400).json({
+					success: false,
+					message: "Pagination parameters are required",
+				});
+			}
+
+			const employee = await Employee.findOne({ where: { userId: id } });
+			if (!employee) {
+				return res.status(404).json({
+					success: false,
+					message: "Employee not found",
+				});
+			}
+
+			const assignedUserIds = employee.assignedUser || [];
+			if (assignedUserIds.length === 0) {
+				return res.send({
+					success: true,
+					data: [],
+					total: 0,
+					currentPage: currPage,
+					totalPages: 0,
+				});
+			}
+			const offset = (currPage - 1) * limit;
+			const requests = await Request.findAndCountAll({
+				where: {
+					userId: {
+						[Op.in]: assignedUserIds,
+					},
+					assignedEmployee: employee.id,
+				},
+				include: [
+					{
+						model: User,
+						attributes: [
+							"id",
+							"firstname",
+							"lastname",
+							"email",
+							"profileImg",
+							"username",
+							"location",
+						],
+					},
+					{
+						model: Service,
+						attributes: ["serviceName"],
+					},
+				],
+				limit: limit,
+				offset: offset,
+				order: [["createdAt", "DESC"]],
+			});
+
+			res.json({
+				success: true,
+				data: requests.rows,
+				total: requests.count,
+				currentPage: currPage,
+				totalPages: Math.ceil(requests.count / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching account requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching requests",
+			});
+		}
+	}
+
+	async confirmRequest(req, res) {
+		try {
+			const { referenceNumber } = req.body;
+			const request = await Transaction.findOne({ referenceNumber });
+			if (!request) {
+				res.send({ success: true, value: false });
+			}
+			res.send({ success: true, value: true });
+		} catch (error) {
+			console.error("Error confirming requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while confirming requests",
 			});
 		}
 	}
@@ -493,6 +1192,140 @@ class RequestRouter {
 			});
 		}
 	}
+
+	async getAllOngoingRequest(req, res) {
+		try {
+			const {
+				id,
+				assignedEmployee,
+				currPage,
+				limit,
+				status,
+				isVerified,
+			} = req.body;
+
+			if (!currPage || !limit) {
+				return res.status(400).json({
+					success: false,
+					message: "Pagination parameters are required",
+				});
+			}
+
+			const whereClause = { isVerified: true };
+			if (assignedEmployee !== undefined && assignedEmployee !== null) {
+				const employee = await Employee.findOne({
+					where: { userId: assignedEmployee },
+				});
+				whereClause["assignedEmployee"] = employee.id;
+			}
+
+			if (isVerified !== undefined && isVerified !== null)
+				whereClause["isVerified"] = isVerified;
+			if (id !== undefined && id !== null) whereClause["userId"] = id;
+			if (status !== undefined && status !== null)
+				whereClause["status"] = status;
+
+			const offset = (currPage - 1) * limit;
+			const requests = await Request.findAndCountAll({
+				where: whereClause,
+				include: [
+					{
+						model: User,
+						attributes: ["id", "firstname", "lastname"],
+					},
+					{
+						model: Employee,
+						include: [
+							{
+								model: User,
+								attributes: ["id", "firstname", "lastname"],
+							},
+						],
+					},
+					{
+						model: Service,
+						attributes: ["serviceName"],
+					},
+				],
+				limit: limit,
+				offset: offset,
+				order: [["createdAt", "DESC"]],
+			});
+
+			res.json({
+				success: true,
+				data: requests.rows,
+				total: requests.count,
+				currentPage: currPage,
+				totalPages: Math.ceil(requests.count / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching account requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching requests",
+			});
+		}
+	}
+
+	async getAllCompletedRequest(req, res) {
+		try {
+			const { currPage, limit, status } = req.body;
+
+			if (!currPage || !limit) {
+				return res.status(400).json({
+					success: false,
+					message: "Pagination parameters are required",
+				});
+			}
+
+			const whereClause = {
+				isVerified: true,
+				status: status,
+			};
+
+			const offset = (currPage - 1) * limit;
+			const requests = await Request.findAndCountAll({
+				where: whereClause,
+				include: [
+					{
+						model: User,
+						attributes: ["id", "firstname", "lastname"],
+					},
+					{
+						model: Employee,
+						include: [
+							{
+								model: User,
+								attributes: ["id", "firstname", "lastname"],
+							},
+						],
+					},
+					{
+						model: Service,
+						attributes: ["serviceName"],
+					},
+				],
+				limit: limit,
+				offset: offset,
+				order: [["createdAt", "DESC"]],
+			});
+
+			res.json({
+				success: true,
+				data: requests.rows,
+				total: requests.count,
+				currentPage: currPage,
+				totalPages: Math.ceil(requests.count / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching account requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching requests",
+			});
+		}
+	}
 }
 
 class ServiceRouter {
@@ -515,16 +1348,30 @@ class ServiceRouter {
 
 class UserRouter {
 	constructor() {
+		// express
 		this.router = express.Router();
 		this.initializeRoutes();
 	}
 
 	initializeRoutes() {
+		this.router.post(
+			"/add_employee",
+			expressAsyncHandler(this.createEmployee)
+		);
+
 		this.router.post("/login", expressAsyncHandler(this.getUser));
 		this.router.post("/request", expressAsyncHandler(this.sendRequest));
 		this.router.post(
 			"/get_request",
 			expressAsyncHandler(this.getAllRequest)
+		);
+		this.router.post(
+			"/get_employee",
+			expressAsyncHandler(this.getAllEmployee)
+		);
+		this.router.post(
+			"/get_employee_no_page",
+			expressAsyncHandler(this.getAllEmployeeNoPage)
 		);
 		this.router.post(
 			"/get_accounts",
@@ -535,14 +1382,22 @@ class UserRouter {
 			expressAsyncHandler(this.setArchived)
 		);
 		this.router.post(
-			"/accept_request",
+			"/accept_request_user",
 			expressAsyncHandler(this.acceptRequest)
 		);
 		this.router.post("/get_user", expressAsyncHandler(this.getUserByID));
 	}
 
 	async sendRequest(req, res) {
-		const { email, password, confirmPassword } = req.body;
+		const {
+			firstName,
+			lastName,
+			username,
+			email,
+			password,
+			confirmPassword,
+		} = req.body;
+
 		if (email === "" || password === "" || confirmPassword === "") {
 			res.send({
 				success: false,
@@ -588,6 +1443,9 @@ class UserRouter {
 
 		try {
 			await AllUserRequest.create({
+				firstname: firstName,
+				lastname: lastName,
+				username: username,
 				email: email,
 				password: await bcrypt.hash(password, 10),
 				isVerified: false,
@@ -638,10 +1496,11 @@ class UserRouter {
 			});
 			return;
 		}
-		let user = await User.findOne({ where: { email: email } });
+	
+		let user = await User.findOne({ where: { email } });
 		if (!user) {
 			const verifiedUser = await AllUserRequest.findOne({
-				where: { email: email },
+				where: { email },
 			});
 			if (!verifiedUser) {
 				return res.send({
@@ -650,6 +1509,7 @@ class UserRouter {
 						"User does not exist. Request an account from admin.",
 				});
 			}
+
 			if (verifiedUser.isVerified === false) {
 				return res.send({
 					success: false,
@@ -666,10 +1526,19 @@ class UserRouter {
 			}
 
 			user = await User.create({
-				username: `User-${verifiedUser.id}`,
+				firstname: verifiedUser.firstname,
+				lastname: verifiedUser.lastname,
+				username: verifiedUser.username,
 				email: verifiedUser.email,
 				password: verifiedUser.password,
 			});
+			await Chat.create({
+				userId: user.id,
+				messages: {
+					staffadmin: [],
+				},
+			});
+
 		} else {
 			if (!(await bcrypt.compare(password, user.password))) {
 				return res.json({
@@ -683,6 +1552,56 @@ class UserRouter {
 			success: true,
 			message: "Successfully logged in!",
 			user: user,
+		});
+	}
+
+	async createEmployee(req, res) {
+		const { firstname, lastname, username, email, password, location } =
+			req.body;
+
+		const passwordRegex =
+			/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+		if (!passwordRegex.test(password)) {
+			res.send({
+				success: false,
+				message:
+					"Password must be longer than 8 characters, and include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+			});
+			return;
+		}
+
+		let user = await AllUserRequest.findOne({
+			where: { email },
+		});
+		if (user) {
+			res.send({
+				success: false,
+				message: `User email already being used.`,
+			});
+			return;
+		}
+
+		user = await User.create({
+			firstname: firstname,
+			lastname: lastname,
+			username: username,
+			email: email,
+			location: location,
+			password: await bcrypt.hash(password, 10),
+			isEmployee: true,
+		});
+
+		await Employee.create({ userId: user.id });
+		await Chat.create({
+			userId: user.id,
+			messages: {
+				staffadmin: [],
+			},
+		});
+		return res.send({
+			success: true,
+			message: "Successfully created an employee!",
 		});
 	}
 
@@ -701,7 +1620,9 @@ class UserRouter {
 				});
 			}
 
-			await request.update({ isVerified: true });
+			await request.update({
+				isVerified: true,
+			});
 
 			res.json({
 				success: true,
@@ -806,6 +1727,7 @@ class UserRouter {
 
 			const offset = (currPage - 1) * limit;
 			const requests = await User.findAndCountAll({
+				where: { isEmployee: false },
 				limit: limit,
 				offset: offset,
 				order: [["createdAt", "DESC"]],
@@ -817,6 +1739,83 @@ class UserRouter {
 				total: requests.count,
 				currentPage: currPage,
 				totalPages: Math.ceil(requests.count / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching account requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching requests",
+			});
+		}
+	}
+
+	async getAllEmployee(req, res) {
+		try {
+			const { currPage, limit } = req.body;
+
+			if (!currPage || !limit) {
+				return res.status(400).json({
+					success: false,
+					message: "Pagination parameters are required",
+				});
+			}
+
+			const offset = (currPage - 1) * limit;
+			const requests = await User.findAndCountAll({
+				where: {
+					isEmployee: true,
+				},
+				include: [
+					{
+						model: Employee,
+						attributes: [
+							"assignedUser",
+							"description",
+							"numberHandledUser",
+						],
+					},
+				],
+				limit: limit,
+				offset: offset,
+				order: [["createdAt", "DESC"]],
+			});
+
+			res.json({
+				success: true,
+				data: requests.rows,
+				total: requests.count,
+				currentPage: currPage,
+				totalPages: Math.ceil(requests.count / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching account requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching requests",
+			});
+		}
+	}
+
+	async getAllEmployeeNoPage(req, res) {
+		try {
+			const employee = await User.findAll({
+				where: {
+					isEmployee: true,
+				},
+				include: [
+					{
+						model: Employee,
+						attributes: [
+							"assignedUser",
+							"description",
+							"numberHandledUser",
+						],
+					},
+				],
+			});
+			res.json({
+				success: true,
+				data: employee,
 			});
 		} catch (error) {
 			console.error("Error fetching account requests:", error);

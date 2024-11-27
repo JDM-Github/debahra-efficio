@@ -51,6 +51,8 @@ class App {
 		this.router.use("/appointment", appointmentRouter);
 
 		this.router.get("/reset", expressAsyncHandler(this.reset));
+		this.router.post("/example", expressAsyncHandler(this.example));
+
 		this.router.post("/request_account", this.requestAccount);
 		this.router.get("*", this.handleCatchAll);
 
@@ -69,6 +71,10 @@ class App {
 	async reset(req, res) {
 		await sequelize.sync({ force: true });
 		res.send("RESET DATABASE");
+	}
+
+	async example(req, res) {
+		res.send("EXAMPLE");
 	}
 
 	start() {

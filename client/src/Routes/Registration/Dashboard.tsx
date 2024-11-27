@@ -22,14 +22,14 @@ export default function Dashboard() {
 					<div>GET STARTED</div>
 				</NavLink>
 				<div className="grid">
-					<div className="service">BOOKKEEPING</div>
-					<div className="service">BOOKKEEPING</div>
-					<div className="service">BOOKKEEPING</div>
-					<div className="service">BOOKKEEPING</div>
-					<div className="service">BOOKKEEPING</div>
-					<div className="service">BOOKKEEPING</div>
-					<div className="service">BOOKKEEPING</div>
-					<div className="service">BOOKKEEPING</div>
+					<div className="service">Service</div>
+					<div className="service">Service</div>
+					<div className="service">Service</div>
+					<div className="service">Service</div>
+					<div className="service">Service</div>
+					<div className="service">Service</div>
+					<div className="service">Service</div>
+					<div className="service">Service</div>
 				</div>
 			</div>
 			<Copyright />
