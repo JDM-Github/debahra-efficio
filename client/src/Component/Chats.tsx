@@ -405,9 +405,7 @@ export default function ChatWindow({
 		}
 	};
 
-	const handleDelete = (index) => {
-		// setMessages(messages.filter((_, i) => i !== index));
-	};
+	const handleDelete = (index) => {};
 
 	return (
 		<>
@@ -486,17 +484,6 @@ export default function ChatWindow({
 
 					{user.isEmployee &&
 						request &&
-						request.price == null &&
-						staffTarget !== "staffadmin" && (
-							<button className="offer" onClick={createOffer}>
-								Create Offer
-							</button>
-						)}
-
-					{/* WHEN ALREADY ONGOING OR HAVE PRICE */}
-					{user.isEmployee &&
-						request &&
-						request.price != null &&
 						staffTarget !== "staffadmin" && (
 							<button
 								className="offer"
@@ -507,22 +494,10 @@ export default function ChatWindow({
 						)}
 					{user.isEmployee &&
 						request &&
-						request.price != null &&
 						staffTarget !== "staffadmin" && (
 							<button className="offer">Complete</button>
 						)}
-					{!user.isEmployee &&
-						!user.isAdmin &&
-						request &&
-						request.price != null &&
-						staffTarget !== "staffadmin" && (
-							<button
-								className="offer"
-								onClick={() => setIstTransactionModal(true)}
-							>
-								Send Payment
-							</button>
-						)}
+
 					<button onClick={() => handleSendMessage()}>Send</button>
 				</div>
 
@@ -585,7 +560,6 @@ export default function ChatWindow({
 					requestId={request.id}
 					isOpen={isAddProgressStepModalOpen}
 					onClose={closeAddProgressStepModal}
-					// onAddProgressStep={handleAddProgressStep}
 				/>
 			)}
 		</>

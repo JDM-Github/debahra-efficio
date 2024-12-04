@@ -7,7 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import RequestHandler from "../../Functions/RequestHandler.js";
 
-const background = require("../../Assets/background.png");
+const background = require("../../Assets/logo.png");
 
 export default function LoginPage() {
 	const navigate = useNavigate();

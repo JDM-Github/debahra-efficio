@@ -406,7 +406,6 @@ class RequestRouter {
 		);
 		this.router.post(
 			"/request-document",
-			upload.single("serviceFile"),
 			expressAsyncHandler(this.requestDocument)
 		);
 		this.router.post(
@@ -700,16 +699,12 @@ class RequestRouter {
 	}
 
 	async requestDocument(req, res) {
-		const { userId, serviceId, serviceName } = req.body;
-		const serviceFile = req.file;
-
+		const { userId, serviceId, serviceName, imageUrl } = req.body;
 		try {
-			const uploadedUrl = await uploadToCloudinary(serviceFile.buffer);
-
 			await Request.create({
 				userId: userId,
 				serviceRequestId: serviceId,
-				uploadedDocument: uploadedUrl,
+				uploadedDocument: imageUrl,
 			});
 			res.send({
 				success: true,
@@ -1496,7 +1491,7 @@ class UserRouter {
 			});
 			return;
 		}
-	
+
 		let user = await User.findOne({ where: { email } });
 		if (!user) {
 			const verifiedUser = await AllUserRequest.findOne({
@@ -1538,7 +1533,6 @@ class UserRouter {
 					staffadmin: [],
 				},
 			});
-
 		} else {
 			if (!(await bcrypt.compare(password, user.password))) {
 				return res.json({
@@ -1826,6 +1820,63 @@ class UserRouter {
 		}
 	}
 }
+// const multer = require("multer");
+
+// const { v2: cloudinary } = require("cloudinary");
+
+// cloudinary.config({
+// 	cloud_name: "djheiqm47",
+// 	api_key: "692765673474153",
+// 	api_secret: "kT7k8hvxo-bqMWL0aHB2o3k90dA",
+// });
+
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage: storage });
+
+// async function uploadToCloudinary(buffer) {
+// 	return new Promise((resolve, reject) => {
+// 		cloudinary.uploader
+// 			.upload_stream({ resource_type: "auto" }, (error, result) => {
+// 				if (error) reject(error);
+// 				else resolve(result.secure_url);
+// 			})
+// 			.end(buffer);
+// 	});
+// }
+
+class ImageHandler {
+	constructor() {
+		this.router = express.Router();
+		this.initializeRoutes();
+	}
+
+	initializeRoutes() {
+		this.router.post(
+			"/upload-image",
+			upload.single("file"),
+			expressAsyncHandler(this.uploadImageToCloudinary)
+		);
+	}
+
+	async uploadImageToCloudinary(req, res) {
+		const serviceFile = req.file;
+
+		try {
+			const uploadedUrl = await uploadToCloudinary(serviceFile.buffer);
+			res.send({
+				success: true,
+				uploadedDocument: uploadedUrl,
+			});
+		} catch (error) {
+			res.send({
+				success: false,
+				message: `An error occurred while creating the request. ${error.message}`,
+			});
+		}
+	}
+}
+
+const imageRouter = new ImageHandler().router;
 
 const userRouter = new UserRouter().router;
 const chatRouter = new ChatRouter().router;
@@ -1833,6 +1884,7 @@ const reqRouter = new RequestRouter().router;
 const servRouter = new ServiceRouter().router;
 const appointmentRouter = new AppointmentRouter().router;
 module.exports = {
+	imageRouter,
 	userRouter,
 	chatRouter,
 	reqRouter,

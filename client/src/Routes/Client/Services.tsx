@@ -2,7 +2,7 @@ import React, { ReactElement, useEffect, useState } from "react";
 import TopBar from "../../Component/TopBar.tsx";
 import Copyright from "../../Component/Copyright.tsx";
 import FormMaker from "../../Component/FormMaker.tsx";
-import "./SCSS/Services.scss";
+// import "./SCSS/Services.scss";
 
 import RequestHandler from "../../Functions/RequestHandler.js";
 import { toast } from "react-toastify";
@@ -95,44 +95,58 @@ export default function Services({ changeURL }) {
 					detailImg={formimg}
 				/>
 			)}
-			<div className={`services`}>
+			<div className="services bg-gray-50 min-h-screen">
 				<TopBar clickHandler={() => changeURL("profile")} />
-				<div className="main-services">
-					<div className="all-services">
+				<div className="main-services container mx-auto px-4">
+					<div className="all-services grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 						{services &&
 							services.map((service, index) => (
-								<div>
-									<img src={service.serviceImg}></img>
-									<button
-										key={index}
-										value={service.serviceName}
-										className="take"
-										onClick={(e) => {
-											const target =
-												e.currentTarget as HTMLButtonElement;
-											handleShowForm(
-												target.value,
-												service.id,
-												service.serviceURL
-											);
-										}}
-									>
-										Take this service!
-									</button>
-									<button
-										className="info"
-										onClick={(e) => {
-											const target =
-												e.currentTarget as HTMLButtonElement;
-											handleShowDetailed(
-												target.value,
-												service.serviceImg,
-												service.serviceDescription
-											);
-										}}
-									>
-										Details
-									</button>
+								<div
+									key={index}
+									className="service-card bg-white shadow-lg rounded-lg p-4 flex flex-col items-center"
+								>
+									<img
+										src={service.serviceImg}
+										alt={service.serviceName}
+										className="service-img w-full h-40 object-cover rounded-md mb-4"
+									/>
+									<h3 className="service-title text-xl font-semibold text-green-700 mb-2">
+										{service.serviceName}
+									</h3>
+									<p className="service-description text-sm text-gray-600 mb-4">
+										{service.serviceDescription}
+									</p>
+									<div className="service-actions flex justify-between w-full">
+										<button
+											value={service.serviceName}
+											className="take bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+											onClick={(e) => {
+												const target =
+													e.currentTarget as HTMLButtonElement;
+												handleShowForm(
+													target.value,
+													service.id,
+													service.serviceURL
+												);
+											}}
+										>
+											Take this service!
+										</button>
+										<button
+											className="info bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md"
+											onClick={(e) => {
+												const target =
+													e.currentTarget as HTMLButtonElement;
+												handleShowDetailed(
+													target.value,
+													service.serviceImg,
+													service.serviceDescription
+												);
+											}}
+										>
+											Details
+										</button>
+									</div>
 								</div>
 							))}
 					</div>

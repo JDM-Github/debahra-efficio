@@ -13,8 +13,8 @@ const headers = [
 	"ID",
 	"Assigned Staff",
 	"Service Name",
-	"Price",
-	"Paid Amount",
+	// "Price",
+	// "Paid Amount",
 	"Status",
 	"Created At",
 	"Actions",
@@ -27,12 +27,12 @@ const renderRow = (item) => (
 			{item.Employee.User.firstname + " " + item.Employee.User.lastname}
 		</td>
 		<td>{item.Service.serviceName}</td>
-		<td style={{ fontWeight: "bold" }}>
+		{/* <td style={{ fontWeight: "bold" }}>
 			{item.price == null ? "NEGOTIATING" : "₱ " + item.price}
 		</td>
 		<td style={{ fontWeight: "bold" }}>
 			{item.paidAmount == null ? "₱ 0" : "₱ " + item.paidAmount}
-		</td>
+		</td> */}
 		<td>
 			<span
 				style={{

@@ -16,6 +16,8 @@ import OngoingRequest from "./OngoingRequest.tsx";
 import CompletedRequest from "./CompletedRequest.tsx";
 import CancelledRequest from "./CancelledRequest.tsx";
 import { ToastContainer } from "react-toastify";
+import PaymentSuccess from "./PaymentSuccess.tsx";
+import PaymentFailed from "./PaymentFailed.tsx";
 
 export default function ClientRoute() {
 	const navigate = useNavigate();
@@ -44,6 +46,15 @@ export default function ClientRoute() {
 					/>
 					<Route
 						path="chats"
+						element={<Chats changeURL={changeURL} />}
+					/>
+					<Route
+						path="payment-success"
+						element={<PaymentSuccess />}
+					/>
+					<Route path="payment-failed" element={<PaymentFailed />} />
+					<Route
+						path="payment-failed"
 						element={<Chats changeURL={changeURL} />}
 					/>
 					<Route

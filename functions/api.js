@@ -1,25 +1,28 @@
 const express = require("express");
 const cors = require("cors");
+const axios = require("axios");
 const serverless = require("serverless-http");
 const path = require("path");
 const bodyParser = require("body-parser");
+const { v4: uuidv4 } = require("uuid");
 
 const expressAsyncHandler = require("express-async-handler");
 
-const { sequelize } = require("./models");
+const { sequelize, User } = require("./models");
 const {
 	userRouter,
 	chatRouter,
 	reqRouter,
 	servRouter,
 	appointmentRouter,
+	imageRouter,
 } = require("./routers.js");
 
 class App {
 	constructor() {
 		this.app = express();
 		this.router = express.Router();
-		this.DEVELOPMENT = false;
+		this.DEVELOPMENT = true;
 
 		this.setupMiddleware();
 		this.setupRoutes();
@@ -48,6 +51,7 @@ class App {
 		this.router.use("/chats", chatRouter);
 		this.router.use("/request", reqRouter);
 		this.router.use("/service", servRouter);
+		this.router.use("/image", imageRouter);
 		this.router.use("/appointment", appointmentRouter);
 
 		this.router.get("/reset", expressAsyncHandler(this.reset));
@@ -55,8 +59,50 @@ class App {
 
 		this.router.post("/request_account", this.requestAccount);
 		this.router.get("*", this.handleCatchAll);
-
 		this.app.use("/.netlify/functions/api", this.router);
+
+		const PAYMONGO_API_KEY = "sk_test_PoK58FtMrQaHHc2EyguAKYwj";
+		this.router.post("/create-payment", async (req, res) => {
+			const { amount, userId, body } = req.body;
+			try {
+				const sourceResponse = await axios.post(
+					"https://api.paymongo.com/v1/sources",
+					{
+						data: {
+							attributes: {
+								amount: amount * 100,
+								currency: "PHP",
+								type: "gcash",
+								redirect: {
+									success: `http://localhost:3000/client/payment-success?user=${userId}&body=${encodeURIComponent(
+										JSON.stringify(body)
+									)}`,
+									expired: `http://localhost:3000/client/payment-failed?user=${userId}`,
+									failed: `http://localhost:3000/client/payment-failed?user=${userId}`,
+								},
+							},
+						},
+					},
+					{
+						headers: {
+							Authorization: `Basic ${Buffer.from(
+								PAYMONGO_API_KEY
+							).toString("base64")}`,
+							"Content-Type": "application/json",
+						},
+					}
+				);
+				const gcashSource = sourceResponse.data.data;
+				res.json({
+					redirectUrl: gcashSource.attributes.redirect.checkout_url,
+				});
+			} catch (error) {
+				console.error("Error creating payment:", error);
+				res.status(500).json({
+					error: "Failed to create GCash payment",
+				});
+			}
+		});
 	}
 
 	requestAccount(req, res) {

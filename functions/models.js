@@ -71,6 +71,10 @@ const User = sequelize.define(
 			defaultValue: false,
 			allowNull: false,
 		},
+		transaction_id: {
+			type: DataTypes.INTEGER,
+			defaultValue: null,
+		},
 	},
 	{
 		timestamps: true,
@@ -133,6 +137,10 @@ const Service = sequelize.define(
 			type: DataTypes.STRING,
 			defaultValue: "",
 		},
+		servicePrice: {
+			type: DataTypes.INTEGER,
+			defaultValue: 100,
+		},
 	},
 	{
 		timestamps: true,
@@ -145,7 +153,6 @@ const Request = sequelize.define(
 		userId: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
-			unique: true,
 			references: {
 				model: "Users",
 				key: "id",

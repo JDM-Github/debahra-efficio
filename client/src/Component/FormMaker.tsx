@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import "./FormMaker.scss";
 import RequestHandler from "../Functions/RequestHandler";
@@ -89,7 +90,6 @@ export default function FormMaker({
 	formLink = "",
 }) {
 	const user = JSON.parse(localStorage.getItem("users") || "{}");
-
 	const [uploadedFile, setUploadedFile] = useState(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [fileType, setFileType] = useState("");
@@ -106,21 +106,42 @@ export default function FormMaker({
 		removeForm();
 	};
 
+	const createPaymentSession = async (body) => {
+		try {
+			const response = await RequestHandler.handleRequest(
+				"post",
+				"create-payment",
+				{
+					amount: 100,
+					userId: user.id,
+					body,
+				}
+			);
+			if (response.redirectUrl) {
+				window.location.href = response.redirectUrl;
+			} else {
+				console.error("Payment URL not found.");
+				toast.error("Failed to get the payment link.");
+			}
+		} catch (error) {
+			console.error("Error creating payment session:", error);
+			toast.error("Failed to create payment session.");
+		}
+	};
+
 	const submitDocument = async () => {
 		if (!uploadedFile) {
 			toast.error("Please select a file!");
 			return;
 		}
-		const formData = new FormData();
-		formData.append("serviceFile", uploadedFile);
-		formData.append("userId", user.id);
-		formData.append("serviceId", serviceId);
-		formData.append("serviceName", formName);
 
+		const formData = new FormData();
+		formData.append("file", uploadedFile);
+		let imageUrl = "";
 		try {
 			const data = await RequestHandler.handleRequest(
 				"post",
-				"request/request-document",
+				"image/upload-image",
 				formData,
 				{
 					headers: {
@@ -129,16 +150,24 @@ export default function FormMaker({
 				}
 			);
 			if (data.success) {
-				toast.success(data.message);
+				imageUrl = data.uploadedDocument;
 			} else {
 				toast.error(data.message);
+				return null;
 			}
 		} catch (error) {
 			console.error("Error submitting the document:", error);
 			toast.error("Error submitting the document");
+			return null;
 		}
-		setUploadedFile(null);
-		setFileType("");
+
+		await createPaymentSession({
+			userId: user.id,
+			imageUrl,
+			serviceId,
+			serviceName: formName,
+		});
+		return;
 	};
 
 	const handleFileChange = (e) => {
@@ -162,95 +191,117 @@ export default function FormMaker({
 	return (
 		<div className="form-maker">
 			{formComp && (
-				<div className="form-card">
-					<div className="design"></div>
-					<h2 className="form-title">{formName} FORM</h2>
-					<form onSubmit={handleSubmit} className="generated-form">
+				<div className="form-card bg-green-50 shadow-lg rounded-lg p-8 w-full max-w-2xl">
+					<div className="design h-2 bg-green-500 rounded-t-lg"></div>
+					<h2 className="form-title text-2xl font-bold text-green-700 mb-4">
+						{formName} FORM
+					</h2>
+					<form
+						onSubmit={handleSubmit}
+						className="generated-form space-y-4"
+					>
 						{formComp}
-						<button type="submit" className="submit-btn">
-							TAKE THIS SERVICE
-						</button>
-						<button
-							type="button"
-							onClick={removeForm}
-							className="cancel-btn"
-						>
-							CANCEL
-						</button>
+						<div className="flex justify-between">
+							<button
+								type="submit"
+								className="submit-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+							>
+								TAKE THIS SERVICE
+							</button>
+							<button
+								type="button"
+								onClick={removeForm}
+								className="cancel-btn bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md"
+							>
+								CANCEL
+							</button>
+						</div>
 					</form>
 				</div>
 			)}
 
-			<div className="form-card right-card">
-				<div className="design"></div>
-				<h2 className="form-title">{formName} DOCUMENT</h2>
-				<button onClick={openModal} className="show-form-btn">
+			{/* Document Upload and Details Card */}
+			<div className="form-card bg-green-50 shadow-lg rounded-lg p-8 w-full max-w-2xl">
+				<div className="design h-2 bg-green-500 rounded-t-lg"></div>
+				<h2 className="form-title text-2xl font-bold text-green-700 mb-4">
+					{formName} DOCUMENT
+				</h2>
+				<p className="text-lg text-green-600 font-semibold mb-4">
+					Service Price: ₱{200}
+				</p>
+				<button
+					onClick={openModal}
+					className="show-form-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md mb-4"
+				>
 					SHOW {formName} FORM
 				</button>
-				<div className="upload-form">
-					<label className="upload-label">
+				<div className="upload-form mt-4 space-y-4">
+					<label className="upload-label flex flex-col items-center bg-green-100 border border-green-300 rounded-lg p-4 cursor-pointer">
 						<input
 							type="file"
 							accept=".pdf,.jpg,.jpeg,.png"
 							onChange={handleFileChange}
+							className="hidden"
 							required
 						/>
-						<span>Upload Document</span>
+						<span className="text-green-700 font-medium">
+							Upload Document
+						</span>
 					</label>
 					{uploadedFile && fileType.startsWith("image/") && (
 						<img
 							src={URL.createObjectURL(uploadedFile)}
-							className="uploaded-img"
+							className="uploaded-img max-h-64 object-contain mx-auto"
 							alt="Uploaded Preview"
 						/>
 					)}
 					{uploadedFile && fileType === "application/pdf" && (
 						<iframe
 							src={URL.createObjectURL(uploadedFile)}
-							className="uploaded-img"
+							className="uploaded-img w-full h-64 border border-green-300"
 							title="Uploaded PDF Preview"
 						/>
 					)}
-					<button
-						type="submit"
-						className="show-form-btn submit-btn"
-						onClick={submitDocument}
-					>
-						SUBMIT DOCUMENT
-					</button>
-					<button
-						type="button"
-						onClick={removeForm}
-						className="cancel-btn"
-					>
-						CANCEL
-					</button>
+					<div className="flex justify-between">
+						<button
+							type="submit"
+							className="submit-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+							onClick={submitDocument}
+						>
+							SUBMIT DOCUMENT
+						</button>
+						<button
+							type="button"
+							onClick={removeForm}
+							className="cancel-btn bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md"
+						>
+							CANCEL
+						</button>
+					</div>
 				</div>
 
+				{/* Modal for Form Preview */}
 				{isModalOpen && (
-					<div className="modal-form">
-						<div className="modal-content">
-							<span className="close" onClick={closeModal}>
-								&times;
-							</span>
-							<img
-								src={formLink}
-								alt="DTI Registration Form"
-								style={{
-									position: "relative",
-									width: "auto",
-									height: "90vh",
-								}}
-							/>
+					<div className="modal-form fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+						<div className="modal-content bg-white rounded-lg shadow-lg overflow-hidden max-w-6xl w-full">
+							<div className="relative">
+								<span
+									className="close absolute top-2 right-2 text-2xl text-gray-700 cursor-pointer"
+									onClick={closeModal}
+								>
+									&times;
+								</span>
+								<img
+									src={formLink}
+									alt="DTI Registration Form"
+									className="w-full max-h-[80vh] object-contain"
+								/>
+							</div>
 							<a
 								target="_blank"
 								href={formLink}
 								download
-								className="download-btn"
-								style={{
-									position: "relative",
-									width: "auto",
-								}}
+								className="download-btn block bg-green-600 hover:bg-green-700 text-white text-center px-4 py-2"
 							>
 								DOWNLOAD
 							</a>

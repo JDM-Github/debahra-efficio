@@ -7,6 +7,7 @@ import "./SCSS/Requests.scss";
 import Utility from "../../Functions/Utility.js";
 import RequestHandler from "../../Functions/RequestHandler.js";
 import { toast } from "react-toastify";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const headers = ["ID", "Service Name", "Status", "Created At", "Actions"];
 

@@ -54,16 +54,6 @@ export default function ClientNavigation() {
 						<div>Chats</div>
 					</NavLink>
 
-					{/* <NavLink
-						to="about"
-						className={({ isActive }) =>
-							isActive ? "nav-items active-link" : "nav-items"
-						}
-					>
-						<FontAwesomeIcon icon={faInfo} className="nav-icon" />
-						<div>About</div>
-					</NavLink> */}
-
 					<NavLink
 						to="services"
 						className={({ isActive }) =>
