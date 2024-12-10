@@ -88,6 +88,7 @@ export default function FormMaker({
 	formName,
 	serviceId = "1",
 	formLink = "",
+	price = 100,
 }) {
 	const user = JSON.parse(localStorage.getItem("users") || "{}");
 	const [uploadedFile, setUploadedFile] = useState(null);
@@ -112,7 +113,7 @@ export default function FormMaker({
 				"post",
 				"create-payment",
 				{
-					amount: 100,
+					amount: price,
 					userId: user.id,
 					body,
 				}
@@ -121,17 +122,17 @@ export default function FormMaker({
 				window.location.href = response.redirectUrl;
 			} else {
 				console.error("Payment URL not found.");
-				toast.error("Failed to get the payment link.");
+				toast.error("Failed	to get the payment link.");
 			}
 		} catch (error) {
 			console.error("Error creating payment session:", error);
-			toast.error("Failed to create payment session.");
+			toast.error("Failed	to create payment session.");
 		}
 	};
 
 	const submitDocument = async () => {
 		if (!uploadedFile) {
-			toast.error("Please select a file!");
+			toast.error("Please	select a file!");
 			return;
 		}
 
@@ -156,7 +157,7 @@ export default function FormMaker({
 				return null;
 			}
 		} catch (error) {
-			console.error("Error submitting the document:", error);
+			console.error("Error submitting	the	document:", error);
 			toast.error("Error submitting the document");
 			return null;
 		}
@@ -165,6 +166,7 @@ export default function FormMaker({
 			userId: user.id,
 			imageUrl,
 			serviceId,
+			price: price,
 			serviceName: formName,
 		});
 		return;
@@ -180,7 +182,7 @@ export default function FormMaker({
 
 	const openModal = () => {
 		if (formLink === "") {
-			toast.error("No Image Provided.");
+			toast.error("No	Image Provided.");
 		} else setIsModalOpen(true);
 	};
 
@@ -191,9 +193,9 @@ export default function FormMaker({
 	return (
 		<div className="form-maker">
 			{formComp && (
-				<div className="form-card bg-green-50 shadow-lg rounded-lg p-8 w-full max-w-2xl">
-					<div className="design h-2 bg-green-500 rounded-t-lg"></div>
-					<h2 className="form-title text-2xl font-bold text-green-700 mb-4">
+				<div className="form-card bg-green-50 shadow-lg	rounded-lg p-8 w-full max-w-2xl">
+					<div className="design h-2 bg-green-500	rounded-t-lg"></div>
+					<h2 className="form-title text-2xl font-bold text-green-700	mb-4">
 						{formName} FORM
 					</h2>
 					<form
@@ -211,7 +213,7 @@ export default function FormMaker({
 							<button
 								type="button"
 								onClick={removeForm}
-								className="cancel-btn bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md"
+								className="cancel-btn bg-gray-300 hover:bg-gray-400	text-gray-700 px-4 py-2	rounded-md"
 							>
 								CANCEL
 							</button>
@@ -220,23 +222,23 @@ export default function FormMaker({
 				</div>
 			)}
 
-			{/* Document Upload and Details Card */}
-			<div className="form-card bg-green-50 shadow-lg rounded-lg p-8 w-full max-w-2xl">
-				<div className="design h-2 bg-green-500 rounded-t-lg"></div>
-				<h2 className="form-title text-2xl font-bold text-green-700 mb-4">
+			{/*	Document Upload	and	Details	Card */}
+			<div className="form-card bg-green-50 shadow-lg	rounded-lg p-8 w-full max-w-2xl">
+				<div className="design h-2 bg-green-500	rounded-t-lg"></div>
+				<h2 className="form-title text-2xl font-bold text-green-700	mb-4">
 					{formName} DOCUMENT
 				</h2>
 				<p className="text-lg text-green-600 font-semibold mb-4">
-					Service Price: ₱{200}
+					Service Price: ₱{price}
 				</p>
 				<button
 					onClick={openModal}
-					className="show-form-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md mb-4"
+					className="show-form-btn bg-green-600 hover:bg-green-700 text-white	px-4 py-2 rounded-md mb-4"
 				>
 					SHOW {formName} FORM
 				</button>
-				<div className="upload-form mt-4 space-y-4">
-					<label className="upload-label flex flex-col items-center bg-green-100 border border-green-300 rounded-lg p-4 cursor-pointer">
+				<div className="upload-form	mt-4 space-y-4">
+					<label className="upload-label flex	flex-col items-center bg-green-100 border border-green-300 rounded-lg p-4 cursor-pointer">
 						<input
 							type="file"
 							accept=".pdf,.jpg,.jpeg,.png"
@@ -244,22 +246,22 @@ export default function FormMaker({
 							className="hidden"
 							required
 						/>
-						<span className="text-green-700 font-medium">
+						<span className="text-green-700	font-medium">
 							Upload Document
 						</span>
 					</label>
 					{uploadedFile && fileType.startsWith("image/") && (
 						<img
 							src={URL.createObjectURL(uploadedFile)}
-							className="uploaded-img max-h-64 object-contain mx-auto"
+							className="uploaded-img	max-h-64 object-contain	mx-auto"
 							alt="Uploaded Preview"
 						/>
 					)}
 					{uploadedFile && fileType === "application/pdf" && (
 						<iframe
 							src={URL.createObjectURL(uploadedFile)}
-							className="uploaded-img w-full h-64 border border-green-300"
-							title="Uploaded PDF Preview"
+							className="uploaded-img	w-full h-64	border border-green-300"
+							title="Uploaded	PDF	Preview"
 						/>
 					)}
 					<div className="flex justify-between">
@@ -273,20 +275,20 @@ export default function FormMaker({
 						<button
 							type="button"
 							onClick={removeForm}
-							className="cancel-btn bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md"
+							className="cancel-btn bg-gray-300 hover:bg-gray-400	text-gray-700 px-4 py-2	rounded-md"
 						>
 							CANCEL
 						</button>
 					</div>
 				</div>
 
-				{/* Modal for Form Preview */}
+				{/*	Modal for Form Preview */}
 				{isModalOpen && (
-					<div className="modal-form fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-						<div className="modal-content bg-white rounded-lg shadow-lg overflow-hidden max-w-6xl w-full">
+					<div className="modal-form fixed inset-0 bg-black bg-opacity-50	flex items-center justify-center z-50">
+						<div className="modal-content bg-white rounded-lg shadow-lg	overflow-hidden	max-w-6xl w-full">
 							<div className="relative">
 								<span
-									className="close absolute top-2 right-2 text-2xl text-gray-700 cursor-pointer"
+									className="close absolute top-2	right-2	text-2xl text-gray-700 cursor-pointer"
 									onClick={closeModal}
 								>
 									&times;
@@ -301,7 +303,7 @@ export default function FormMaker({
 								target="_blank"
 								href={formLink}
 								download
-								className="download-btn block bg-green-600 hover:bg-green-700 text-white text-center px-4 py-2"
+								className="download-btn	block bg-green-600 hover:bg-green-700 text-white text-center px-4 py-2"
 							>
 								DOWNLOAD
 							</a>

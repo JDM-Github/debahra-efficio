@@ -341,6 +341,7 @@ export default function ChatWindow({
 			toast.error(`An error occurred while logging in. ${error}`);
 		}
 	};
+
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
 	const scrollDown = (behavior) => {
 		if (messagesEndRef.current)
@@ -405,6 +406,20 @@ export default function ChatWindow({
 		}
 	};
 
+	const completeRequest = async () => {
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"request/completeRequest",
+				{ id: request?.id }
+			);
+			if (!data.success) {
+				toast.error(data.message || "Can't complete the request");
+			}
+		} catch (error) {
+			toast.error(`An error occurred while logging in. ${error}`);
+		}
+	};
 	const handleDelete = (index) => {};
 
 	return (
@@ -495,7 +510,9 @@ export default function ChatWindow({
 					{user.isEmployee &&
 						request &&
 						staffTarget !== "staffadmin" && (
-							<button className="offer">Complete</button>
+							<button className="offer" onClick={completeRequest}>
+								Complete
+							</button>
 						)}
 
 					<button onClick={() => handleSendMessage()}>Send</button>

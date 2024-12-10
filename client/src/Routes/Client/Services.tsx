@@ -15,6 +15,7 @@ const AllTarget = {
 
 export default function Services({ changeURL }) {
 	interface Service {
+		servicePrice: any;
 		id: number;
 		serviceName: string;
 		serviceURL: string;
@@ -25,6 +26,7 @@ export default function Services({ changeURL }) {
 	const [formname, setFormName] = useState<string>();
 	const [showForm, setShowForm] = useState(false);
 	const [showDetails, setShowDetails] = useState(false);
+	const [formPrice, setFormPrice] = useState(100);
 	const [targetForm, setTargetForm] = useState<ReactElement | null>(null);
 	const [formlink, setFormLink] = useState<string>("");
 	const [formid, setFormId] = useState<string>("");
@@ -61,11 +63,12 @@ export default function Services({ changeURL }) {
 		getAllService();
 	}, []);
 
-	const handleShowForm = (target, id, link) => {
+	const handleShowForm = (target, id, link, price) => {
 		setFormName(target);
 		setTargetForm(AllTarget[target] || null);
 		setFormLink(link);
 		setFormId(id);
+		setFormPrice(price);
 		setShowForm(true);
 	};
 
@@ -85,6 +88,7 @@ export default function Services({ changeURL }) {
 					formName={formname}
 					formLink={formlink}
 					serviceId={formid}
+					price={formPrice}
 				/>
 			)}
 			{showDetails && (
@@ -126,7 +130,8 @@ export default function Services({ changeURL }) {
 												handleShowForm(
 													target.value,
 													service.id,
-													service.serviceURL
+													service.serviceURL,
+													service.servicePrice
 												);
 											}}
 										>

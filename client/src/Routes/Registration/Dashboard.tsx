@@ -32,7 +32,7 @@ export default function Dashboard() {
 			</nav>
 
 			{/* Company Image */}
-			<div className="flex justify-center items-center mt-4">
+			<div className="flex justify-center items-center mt-4 shadow-lg">
 				<img
 					src={bg} // Replace with your company's image URL
 					alt="Company Image"
@@ -53,7 +53,7 @@ export default function Dashboard() {
 						experience for you.
 					</p>
 					<NavLink to="login">
-						<div className="w-full font-bold text-3x1 mt-6 bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition duration-300">
+						<div className="w-full font-bold text-3x1 mt-6 bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition duration-200">
 							GET STARTED {">"}
 						</div>
 					</NavLink>
@@ -63,21 +63,21 @@ export default function Dashboard() {
 				<img
 					src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnOU0iPrhLJH7CQPgYM3Q-x7umeizS7holgw&s"
 					alt="Service Card"
-					className="bg-white p-6 rounded-lg shadow-xl text-center border-r-8 border-b-4 border-green-600 h-72 w-full object-cover"
+					className="bg-white p-6 rounded-lg shadow-xl text-center border-r-8 border-b-4 border-green-600 h-72 w-full object-cover transform transition-transform duration-200 hover:scale-105"
 				/>
 
 				{/* Column 2: Service 2 */}
 				<img
 					src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-JYXALwOtzTc34YlgNgGmNvpab4oxo0lfGQ&s"
 					alt="Service Card"
-					className="bg-white p-6 rounded-lg shadow-xl text-center border-r-8 border-b-4 border-green-600 h-72 w-full object-cover"
+					className="bg-white p-6 rounded-lg shadow-xl text-center border-r-8 border-b-4 border-green-600 h-72 w-full object-cover transform transition-transform duration-200 hover:scale-105"
 				/>
 
 				{/* Column 3: Service 3 */}
 				<img
 					src="https://25174313.fs1.hubspotusercontent-eu1.net/hubfs/25174313/assets_moneymax/PagIBIG_Salary_Loan_1.jpg"
 					alt="Service Card"
-					className="bg-white p-6 rounded-lg shadow-xl text-center border-r-8 border-b-4 border-green-600 h-72 w-full object-cover"
+					className="bg-white p-6 rounded-lg shadow-xl text-center border-r-8 border-b-4 border-green-600 h-72 w-full object-cover transform transition-transform duration-200 hover:scale-105"
 				/>
 			</div>
 		</div>

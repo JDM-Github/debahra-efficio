@@ -138,6 +138,17 @@ export default function ClientNavigation() {
 						className={({ isActive }) =>
 							isActive ? "nav-items active-link" : "nav-items"
 						}
+						onClick={(e) => {
+							e.preventDefault();
+
+							if (
+								window.confirm(
+									"Are you sure you want to log out?"
+								)
+							) {
+								window.location.href = "/";
+							}
+						}}
 					>
 						<FontAwesomeIcon
 							icon={faSignOutAlt}

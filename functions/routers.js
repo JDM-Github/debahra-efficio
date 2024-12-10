@@ -39,7 +39,10 @@ async function uploadToCloudinary(buffer) {
 			.end(buffer);
 	});
 }
-
+// Helper function to generate a unique reference number (adjust as needed)
+function generateReferenceNumber() {
+	return "REF" + Math.random().toString(36).substr(2, 9).toUpperCase();
+}
 // const streamUploadImage = (req) => {
 //     return new Promise((resolve, reject) => {
 //         const stream = cloudinary.uploader.upload_stream((error, result) => {
@@ -473,6 +476,10 @@ class RequestRouter {
 			"/check-confirm-transaction",
 			expressAsyncHandler(this.confirmRequest)
 		);
+		this.router.post(
+			"/completeRequest",
+			expressAsyncHandler(this.completeRequest)
+		);
 		//
 		//
 	}
@@ -698,14 +705,58 @@ class RequestRouter {
 		}
 	}
 
+	async completeRequest(req, res) {
+		// complete-request
+		const { id } = req.body;
+
+		try {
+			const request = await Request.findByPk(id);
+			await request.update({
+				status: "COMPLETED",
+			});
+
+			res.send({
+				success: true,
+				message: `Service request was successfully completed.`,
+			});
+		} catch (error) {
+			res.send({
+				success: false,
+				message: `An error occurred while completing the request. ${error.message}`,
+			});
+		}
+	}
+
 	async requestDocument(req, res) {
 		const { userId, serviceId, serviceName, imageUrl } = req.body;
+
 		try {
-			await Request.create({
+			const service = await Service.findOne({
+				where: { id: serviceId },
+			});
+
+			if (!service) {
+				return res.send({
+					success: false,
+					message: `Service with ID ${serviceId} not found.`,
+				});
+			}
+
+			const newRequest = await Request.create({
 				userId: userId,
 				serviceRequestId: serviceId,
 				uploadedDocument: imageUrl,
 			});
+
+			await Transaction.create({
+				userId: userId,
+				requestId: newRequest.id,
+				typeOfTransaction: "Service Request",
+				amount: service.servicePrice,
+				uploadedProof: imageUrl,
+				referenceNumber: generateReferenceNumber(),
+			});
+
 			res.send({
 				success: true,
 				message: `Service request: "${serviceName}" was sent successfully. Please wait for further notice.`,
