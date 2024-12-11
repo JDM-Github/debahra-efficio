@@ -39,14 +39,18 @@ export default function TopBar({ clickHandler }) {
 			</div>
 
 			{/* Profile Container (clickable profile on the right) */}
-			<div
-				className="profile-container relative cursor-pointer flex items-center"
-				onClick={handleProfileClick}
-			>
-				<div className="profile-icon text-2xl bg-green-600 p-2 rounded-full ml-2">
-					👤
+			{user.firstname ? (
+				<div
+					className="profile-container relative cursor-pointer flex items-center"
+					onClick={handleProfileClick}
+				>
+					<div className="profile-icon text-2xl bg-green-600 p-2 rounded-full ml-2">
+						👤
+					</div>
 				</div>
-			</div>
+			) : (
+				<></>
+			)}
 
 			{/* Dropdown Menu */}
 			{menuOpen && (
@@ -61,7 +65,7 @@ export default function TopBar({ clickHandler }) {
 						/>
 						<span>Manage Profile</span>
 					</div>
-					<div
+					{/* <div
 						className="dropdown-item flex items-center px-4 py-2 hover:bg-green-100 cursor-pointer transition duration-200"
 						// onClick={handleLogout}
 					>
@@ -70,7 +74,7 @@ export default function TopBar({ clickHandler }) {
 							className="dropdown-icon mr-2 text-lg"
 						/>
 						<span>Logout</span>
-					</div>
+					</div> */}
 				</div>
 			)}
 		</div>
