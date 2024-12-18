@@ -19,6 +19,7 @@ const {
 	Transaction,
 	ActivityLog,
 } = require("./models");
+const sendEmail = require("./emailSender");
 
 cloudinary.config({
 	cloud_name: "djheiqm47",
@@ -37,6 +38,28 @@ async function uploadToCloudinary(buffer) {
 				else resolve(result.secure_url);
 			})
 			.end(buffer);
+	});
+}
+
+function sendEmailToUser(email, subject, text, body) {
+	const emailSubject = subject;
+	const emailText = text;
+	const emailHtml = body;
+	sendEmail(email, emailSubject, emailText, emailHtml, (error, info) => {
+		if (error) {
+			console.log("Error sending email:", error);
+			return res.status(500).json({
+				success: false,
+				message: "Failed to send email.",
+				error: error.message,
+			});
+		}
+		console.log("Email sent successfully:", info);
+		return res.status(200).json({
+			success: true,
+			message: "Verification email sent successfully.",
+			info: info.messageId,
+		});
 	});
 }
 // Helper function to generate a unique reference number (adjust as needed)
@@ -519,6 +542,7 @@ class RequestRouter {
 	async acceptRequest(req, res) {
 		try {
 			const { id, appointmentData } = req.body;
+
 			const request = await Request.findOne({
 				where: { id },
 				include: [
@@ -601,7 +625,6 @@ class RequestRouter {
 				isVerified: true,
 				assignedEmployee: user.id,
 				status: "VERIFIED",
-				isVerified: true,
 				progress: [
 					...(request.progress || []),
 					{
@@ -614,6 +637,18 @@ class RequestRouter {
 			await ActivityLog.create({
 				message: `${targetUser.firstname} ${targetUser.lastname} (${targetUser.username}) request has been verified. Assigned to ${user.User.firstname} ${user.User.lastname}`,
 			});
+
+			const subject = "Request Verified and Staff Assigned";
+			const text = `Your request for the service "${request.Service.serviceName}" has been verified. Staff ${user.User.firstname} ${user.User.lastname} (${user.User.username}) has been assigned to assist you.`;
+			const body = `
+				<p>Dear ${targetUser.firstname} ${targetUser.lastname},</p>
+				<p>Your request for the service <strong>${request.Service.serviceName}</strong> has been successfully verified.</p>
+				<p>Staff <strong>${user.User.firstname} ${user.User.lastname}</strong> (username: ${user.User.username}) has been assigned to assist you with this request.</p>
+				<p>If you have any questions, feel free to reach out through the chat platform.</p>
+				<p>Best regards,<br/>The Team</p>
+			`;
+
+			sendEmailToUser(targetUser.email, subject, text, body);
 
 			res.send({
 				success: true,
@@ -706,20 +741,46 @@ class RequestRouter {
 	}
 
 	async completeRequest(req, res) {
-		// complete-request
 		const { id } = req.body;
 
 		try {
 			const request = await Request.findByPk(id);
+
+			if (!request) {
+				return res.status(404).send({
+					success: false,
+					message: "Request not found.",
+				});
+			}
+
 			await request.update({
 				status: "COMPLETED",
 			});
 
+			await ActivityLog.create({
+				message: `Request ${id} has been marked as completed.`,
+			});
+
+			const user = await User.findByPk(request.userId);
+			if (user) {
+				const subject = "Your Service Request is Complete";
+				const text = `Dear ${user.firstname}, your service request has been successfully completed.`;
+				const body = `
+				<p>Dear ${user.firstname} ${user.lastname},</p>
+				<p>We are pleased to inform you that your service request has been successfully completed.</p>
+				<p>If you have any further questions or require additional services, feel free to reach out to us.</p>
+				<p>Best regards,<br/>The Team</p>
+			`;
+
+				sendEmailToUser(user.email, subject, text, body);
+			}
+
 			res.send({
 				success: true,
-				message: `Service request was successfully completed.`,
+				message: "Service request was successfully completed.",
 			});
 		} catch (error) {
+			console.error("Error completing request:", error);
 			res.send({
 				success: false,
 				message: `An error occurred while completing the request. ${error.message}`,
@@ -742,6 +803,17 @@ class RequestRouter {
 				});
 			}
 
+			const user = await User.findOne({
+				where: { id: userId },
+			});
+
+			if (!user) {
+				return res.send({
+					success: false,
+					message: `User with ID ${userId} not found.`,
+				});
+			}
+
 			const newRequest = await Request.create({
 				userId: userId,
 				serviceRequestId: serviceId,
@@ -757,11 +829,23 @@ class RequestRouter {
 				referenceNumber: generateReferenceNumber(),
 			});
 
+			const subject = "Service Request Confirmation";
+			const text = `Your request for the service "${serviceName}" has been successfully submitted.`;
+			const body = `
+				<p>Dear ${user.name},</p>
+				<p>Your request for the service <strong>${serviceName}</strong> has been successfully submitted. Please wait for further notice.</p>
+				<p>Below is the document you uploaded:</p>
+				<img src="${imageUrl}" alt="Uploaded Document" style="max-width: 100%; height: auto;"/>
+				<p>Best regards,<br/>The Team</p>
+			`;
+			sendEmailToUser(user.email, subject, text, body);
+
 			res.send({
 				success: true,
 				message: `Service request: "${serviceName}" was sent successfully. Please wait for further notice.`,
 			});
 		} catch (error) {
+			console.error("Error while processing requestDocument:", error);
 			res.send({
 				success: false,
 				message: `An error occurred while creating the request. ${error.message}`,
@@ -901,23 +985,47 @@ class RequestRouter {
 		try {
 			const { requestId, step } = req.body;
 			const request = await Request.findByPk(requestId);
+
 			if (!request) {
-				res.send({
+				return res.send({
 					success: false,
 					message: `Request not found.`,
 				});
 			}
+
 			await request.update({
 				progress: [...request.progress, step],
 			});
-			console.log(request.progress);
+
+			await ActivityLog.create({
+				message: `Progress step added to request ${requestId}: "${step.label}".`,
+			});
+
+			const user = await User.findByPk(request.userId);
+			if (user) {
+				const subject = "Progress Update for Your Request";
+				const text = `A new progress update has been added to your request.`;
+				const body = `
+				<p>Dear ${user.firstname} ${user.lastname},</p>
+				<p>A new progress step has been added to your request:</p>
+				<ul>
+					<li><strong>Step:</strong> ${step.label}</li>
+					<li><strong>Details:</strong> ${step.details}</li>
+				</ul>
+				<p>Please log in to your account to view the full details.</p>
+				<p>Best regards,<br/>The Team</p>
+			`;
+
+				sendEmailToUser(user.email, subject, text, body);
+			}
+
 			res.send({ success: true });
 		} catch (error) {
+			console.error("Error adding progress step:", error);
 			res.send({
 				success: false,
 				message: `An error occurred while creating the progress step. ${error.message}`,
 			});
-			console.log(error.message);
 		}
 	}
 
@@ -1432,6 +1540,10 @@ class UserRouter {
 			expressAsyncHandler(this.acceptRequest)
 		);
 		this.router.post("/get_user", expressAsyncHandler(this.getUserByID));
+		this.router.post(
+			"/deleteEmployee",
+			expressAsyncHandler(this.deleteEmployee)
+		);
 	}
 
 	async sendRequest(req, res) {
@@ -1497,6 +1609,15 @@ class UserRouter {
 				isVerified: false,
 			});
 
+			const subject = "User Registration Request Sent";
+			const text = `Dear ${firstName}, your registration request has been received. Please wait for admin approval.`;
+			const body = `
+				<p>Dear ${firstName},</p>
+				<p>Thank you for your registration request. Your request has been received and is currently pending admin approval.</p>
+				<p>We will notify you once your request is reviewed.</p>
+				<p>Best regards,<br/>The Team</p>
+			`;
+			sendEmailToUser(email, subject, text, body);
 			res.send({
 				success: true,
 				message:
@@ -1669,6 +1790,19 @@ class UserRouter {
 				isVerified: true,
 			});
 
+			await ActivityLog.create({
+				message: `Account request for ${request.firstname} ${request.lastname} (${request.username}) has been verified.`,
+			});
+
+			const subject = "Account Request Verified";
+			const text = `Dear ${request.firstname}, your account request has been verified. You can now log in to complete your registration.`;
+			const body = `
+				<p>Dear ${request.firstname},</p>
+				<p>We are pleased to inform you that your account request has been verified. You can now log in to our platform to complete your registration process and start using our services.</p>
+				<p>If you encounter any issues, feel free to reach out to our support team.</p>
+				<p>Best regards,<br/>The Team</p>
+			`;
+			sendEmailToUser(request.email, subject, text, body);
 			res.json({
 				success: true,
 				message:
@@ -1831,6 +1965,33 @@ class UserRouter {
 				total: requests.count,
 				currentPage: currPage,
 				totalPages: Math.ceil(requests.count / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching account requests:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching requests",
+			});
+		}
+	}
+
+	async deleteEmployee(req, res) {
+		try {
+			const { id } = req.body;
+
+			const user = await User.findOne({
+				where: { id },
+			});
+
+			if (!user) {
+				return res.send({
+					success: false,
+					message: "This user does not exists",
+				});
+			}
+			await user.destroy();
+			res.send({
+				success: true,
 			});
 		} catch (error) {
 			console.error("Error fetching account requests:", error);

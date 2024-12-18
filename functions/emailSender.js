@@ -5,8 +5,8 @@ const nodemailer = require("nodemailer");
 let transporter = nodemailer.createTransport({
 	service: "gmail",
 	auth: {
-		user: "jdmaster888@gmail.com",
-		pass: "mxvj qric haou eibj", // Generated password from Google.
+		user: "efficiodebahra@gmail.com",
+		pass: "zlcm esux xmyq lndm", // Generated password from Google.
 	},
 });
 
@@ -20,7 +20,7 @@ let transporter = nodemailer.createTransport({
  */
 function sendEmail(to, subject, text, html, callback) {
 	const mailOptions = {
-		from: "jdmaster888@gmail.com",
+		from: "efficiodebahra@gmail.com",
 		to: to,
 		subject: subject,
 		text: text,

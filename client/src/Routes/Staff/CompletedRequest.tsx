@@ -14,9 +14,8 @@ const headers = [
 	"Client ID",
 	"Client Name",
 	"Service Name",
-	"Price",
 	"Status",
-	"Completed At",
+	// "Completed At",
 	"Created At",
 	"Actions",
 ];
@@ -27,9 +26,6 @@ const renderRow = (item) => (
 		<td>{item.User.id}</td>
 		<td>{item.User.firstname + " " + item.User.lastname}</td>
 		<td>{item.Service.serviceName}</td>
-		<td style={{ fontWeight: "bold" }}>
-			{item.price == null ? "NEGOTIATING" : "₱" + item.price}
-		</td>
 		<td>
 			<span
 				style={{
@@ -43,7 +39,7 @@ const renderRow = (item) => (
 				{item.status}
 			</span>
 		</td>
-		<td className="tabulator-td">{item.completedAt.split("T")[0]}</td>
+		{/* <td className="tabulator-td">{item.completedAt.split("T")[0]}</td> */}
 		<td className="tabulator-td">{item.createdAt.split("T")[0]}</td>
 	</>
 );

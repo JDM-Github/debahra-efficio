@@ -68,7 +68,7 @@ export default function Employees() {
 		{
 			icon: faTrash,
 			className: "delete-btn",
-			onClick: (id) => console.log(`Delete ID: ${id}`),
+			onClick: (id) => deleteItem(id),
 		},
 	];
 
@@ -96,6 +96,27 @@ export default function Employees() {
 			}
 		} catch (error) {
 			toast.error(`An error occurred while requesting data. ${error}`);
+		}
+	};
+	const deleteItem = async (id) => {
+		try {
+			const confirmation = window.confirm(
+				"Are you sure you want to delete this item?"
+			);
+			if (!confirmation) return;
+			const response = await RequestHandler.handleRequest(
+				"post",
+				"users/deleteEmployee",
+				{ id }
+			);
+			if (response.success) {
+				toast.success("Item deleted successfully");
+				setRequestData(requestData.filter((item) => item.id !== id));
+			} else {
+				toast.error(response.message || "Failed to delete item");
+			}
+		} catch (error) {
+			toast.error(`An error occurred while deleting the item: ${error}`);
 		}
 	};
 	useEffect(() => {

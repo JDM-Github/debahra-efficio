@@ -61,6 +61,47 @@ class App {
 		this.router.get("*", this.handleCatchAll);
 		this.app.use("/.netlify/functions/api", this.router);
 
+		this.router.post("/send-email", (req, res) => {
+			const { email, subject, text, body } = req.body;
+
+			if (!email || !verificationCode) {
+				return res.status(400).json({
+					success: false,
+					message:
+						"Recipient email and verification code are required.",
+				});
+			}
+
+			const emailSubject = subject;
+			const emailText = text;
+
+			const emailHtml = body;
+
+			sendEmail(
+				email,
+				emailSubject,
+				emailText,
+				emailHtml,
+				(error, info) => {
+					if (error) {
+						console.log("Error sending email:", error);
+						return res.status(500).json({
+							success: false,
+							message: "Failed to send email.",
+							error: error.message,
+						});
+					}
+
+					console.log("Email sent successfully:", info);
+					return res.status(200).json({
+						success: true,
+						message: "Verification email sent successfully.",
+						info: info.messageId,
+					});
+				}
+			);
+		});
+
 		const PAYMONGO_API_KEY = "sk_test_PoK58FtMrQaHHc2EyguAKYwj";
 		this.router.post("/create-payment", async (req, res) => {
 			const { amount, userId, body } = req.body;

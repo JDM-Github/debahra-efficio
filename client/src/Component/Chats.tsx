@@ -415,6 +415,8 @@ export default function ChatWindow({
 			);
 			if (!data.success) {
 				toast.error(data.message || "Can't complete the request");
+			} else {
+				toast.success("Service completed successfully!");
 			}
 		} catch (error) {
 			toast.error(`An error occurred while logging in. ${error}`);
@@ -499,6 +501,7 @@ export default function ChatWindow({
 
 					{user.isEmployee &&
 						request &&
+						request.status != "COMPLETED" &&
 						staffTarget !== "staffadmin" && (
 							<button
 								className="offer"
@@ -509,6 +512,7 @@ export default function ChatWindow({
 						)}
 					{user.isEmployee &&
 						request &&
+						request.status != "COMPLETED" &&
 						staffTarget !== "staffadmin" && (
 							<button className="offer" onClick={completeRequest}>
 								Complete

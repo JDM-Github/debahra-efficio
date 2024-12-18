@@ -13,10 +13,9 @@ const headers = [
 	"ID",
 	"Assigned Staff",
 	"Service Name",
-	"Price",
 	"Status",
-	"Completed At",
-	"Created At",
+	// "Completed At",
+	// "Created At",
 	"Actions",
 ];
 
@@ -27,9 +26,7 @@ const renderRow = (item) => (
 			{item.Employee.User.firstname + " " + item.Employee.User.lastname}
 		</td>
 		<td>{item.Service.serviceName}</td>
-		<td style={{ fontWeight: "bold" }}>
-			{item.price == null ? "NEGOTIATING" : "₱" + item.price}
-		</td>
+
 		<td>
 			<span
 				style={{
@@ -43,8 +40,8 @@ const renderRow = (item) => (
 				{item.status}
 			</span>
 		</td>
-		<td className="tabulator-td">{item.completedAt.split("T")[0]}</td>
-		<td className="tabulator-td">{item.createdAt.split("T")[0]}</td>
+		{/* <td className="tabulator-td">{item.completedAt.split("T")[0]}</td> */}
+		{/* <td className="tabulator-td">{item.createdAt.split("T")[0]}</td> */}
 	</>
 );
 
