@@ -26,9 +26,14 @@ export default function TopBar({ clickHandler }) {
 
 	return (
 		<div className="topbar mb-4 bg-green-800 text-white flex items-center justify-between p-2 shadow-md">
-			{/* User Account Section (on the left) */}
 			<div className="user-account flex items-center space-x-3">
-				<div className="logo w-8 h-8 bg-gray-300 rounded-full"></div>
+				<div className="logo w-8 h-8 bg-gray-300 rounded-full overflow-hidden">
+					<img
+						src={user.profileImg || "/default-profile.png"}
+						alt="Profile"
+						className="w-full h-full object-cover"
+					/>
+				</div>
 				<div className="texts flex flex-col">
 					<div className="name text-lg font-semibold">
 						{user.firstname
@@ -38,7 +43,6 @@ export default function TopBar({ clickHandler }) {
 				</div>
 			</div>
 
-			{/* Profile Container (clickable profile on the right) */}
 			{user.firstname ? (
 				<div
 					className="profile-container relative cursor-pointer flex items-center"
@@ -52,7 +56,6 @@ export default function TopBar({ clickHandler }) {
 				<></>
 			)}
 
-			{/* Dropdown Menu */}
 			{menuOpen && (
 				<div className="dropdown-menu absolute right-5 mt-36 bg-white text-green-800 rounded-lg shadow-lg w-48 py-2 z-10">
 					<div

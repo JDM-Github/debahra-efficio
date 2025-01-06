@@ -361,11 +361,15 @@ class AppointmentRouter {
 			"/get_appointments",
 			expressAsyncHandler(this.getAllAppointments)
 		);
+		// this.router.post(
+		// 	"/get_employee_appointments",
+		// 	expressAsyncHandler(this.getAllAppointments)
+		// );
 	}
 
 	async getAllAppointments(req, res) {
 		try {
-			const { currPage, limit, status } = req.body;
+			const { userEmail, staffId, currPage, limit, status } = req.body;
 
 			if (!currPage || !limit) {
 				return res.status(400).json({
@@ -373,14 +377,17 @@ class AppointmentRouter {
 					message: "Pagination parameters are required",
 				});
 			}
-
 			const whereClause = {};
-			if (status != undefined && status !== null) {
-				whereClause.status = status;
+			if (staffId != undefined && staffId !== null) {
+				whereClause.staffId = staffId;
 			}
-
+			if (userEmail != undefined && userEmail !== null) {
+				whereClause.userEmail = userEmail;
+			}
 			const offset = (currPage - 1) * limit;
-			const appointment = await Appointment.findAndCountAll({
+
+			// REQUEST ONLY APPOINTED
+			let appointment = await Appointment.findAndCountAll({
 				where: whereClause,
 				include: [
 					{
@@ -402,9 +409,13 @@ class AppointmentRouter {
 				order: [["createdAt", "DESC"]],
 			});
 
+			const appointment2 = appointment.rows.filter(
+				(app) => app.Request.status === "APPOINTED"
+			);
+
 			res.json({
 				success: true,
-				data: appointment.rows,
+				data: appointment2,
 				total: appointment.count,
 				currentPage: currPage,
 				totalPages: Math.ceil(appointment.count / limit),
@@ -503,8 +514,202 @@ class RequestRouter {
 			"/completeRequest",
 			expressAsyncHandler(this.completeRequest)
 		);
-		//
-		//
+		this.router.post(
+			"/setAppointment",
+			expressAsyncHandler(this.setAppointment)
+		);
+		this.router.post("/load_admin", expressAsyncHandler(this.load_admin));
+	}
+
+	async load_admin(req, res) {
+		try {
+			const { Op } = require("sequelize");
+			const endDate = new Date();
+			const startDate = new Date();
+			startDate.setDate(endDate.getDate() - 7 * 7);
+
+			const transactions = await Transaction.findAll({
+				attributes: [
+					[
+						sequelize.fn(
+							"DATE_TRUNC",
+							"week",
+							sequelize.col("createdAt")
+						),
+						"weekStart",
+					],
+					[
+						sequelize.fn("SUM", sequelize.col("amount")),
+						"totalRevenue",
+					],
+				],
+				where: {
+					createdAt: {
+						[Op.between]: [startDate, endDate],
+					},
+				},
+				group: [
+					sequelize.fn(
+						"DATE_TRUNC",
+						"week",
+						sequelize.col("createdAt")
+					),
+				],
+				order: [
+					[
+						sequelize.fn(
+							"DATE_TRUNC",
+							"week",
+							sequelize.col("createdAt")
+						),
+						"ASC",
+					],
+				],
+			});
+
+			const revenueData = {
+				labels: [
+					"Week 1",
+					"Week 2",
+					"Week 3",
+					"Week 4",
+					"Week 5",
+					"Week 6",
+					"Week 7",
+				],
+				datasets: [
+					{
+						label: "Revenue (₱)",
+						data: Array(7).fill(0),
+						borderColor: "#34D399",
+						backgroundColor: "rgba(52, 211, 153, 0.2)",
+						fill: true,
+						tension: 0.4,
+					},
+				],
+			};
+
+			transactions.forEach((transaction) => {
+				const weekIndex = Math.floor(
+					(new Date(transaction.dataValues.weekStart) - startDate) /
+						(7 * 24 * 60 * 60 * 1000)
+				);
+				if (weekIndex >= 0 && weekIndex < 7) {
+					revenueData.datasets[0].data[weekIndex] = parseFloat(
+						transaction.dataValues.totalRevenue
+					);
+				}
+			});
+
+			const salesTransactions = await Transaction.findAll({
+				attributes: [
+					[
+						sequelize.fn(
+							"DATE_TRUNC",
+							"month",
+							sequelize.col("createdAt")
+						),
+						"monthStart",
+					],
+					[
+						sequelize.fn("SUM", sequelize.col("amount")),
+						"totalSales",
+					],
+				],
+				where: {
+					createdAt: {
+						[Op.gte]: new Date(new Date().getFullYear(), 0, 1), 
+					},
+				},
+				group: [
+					sequelize.fn(
+						"DATE_TRUNC",
+						"month",
+						sequelize.col("createdAt")
+					),
+				],
+				order: [
+					[
+						sequelize.fn(
+							"DATE_TRUNC",
+							"month",
+							sequelize.col("createdAt")
+						),
+						"ASC",
+					],
+				],
+			});
+
+			const salesData = {
+				labels: [
+					"Jan",
+					"Feb",
+					"Mar",
+					"Apr",
+					"May",
+					"Jun",
+					"Jul",
+					"Aug",
+					"Sep",
+					"Oct",
+					"Nov",
+					"Dec",
+				],
+				datasets: [
+					{
+						label: "Sales (₱)",
+						data: Array(12).fill(0),
+						backgroundColor: "rgba(34,197,94,0.6)",
+						borderColor: "rgba(34,197,94,1)",
+						borderWidth: 1,
+					},
+				],
+			};
+
+			salesTransactions.forEach((transaction) => {
+				const monthIndex = new Date(
+					transaction.dataValues.monthStart
+				).getMonth();
+				if (monthIndex >= 0 && monthIndex < 12) {
+					salesData.datasets[0].data[monthIndex] = parseFloat(
+						transaction.dataValues.totalSales
+					);
+				}
+			});
+
+			const totalUser = await User.count();
+			const pendingRequest = await Request.count({where: {status: "VERIFIED"}});
+			const completedRequest = await Request.count({
+				where: { status: "COMPLETED" },
+			});
+			const totalRevenueResult = await Transaction.findOne({
+				attributes: [
+					[
+						sequelize.fn("SUM", sequelize.col("amount")),
+						"totalRevenue",
+					],
+				],
+			});
+			const totalRevenue =
+				totalRevenueResult.dataValues.totalRevenue || 0;
+
+			res.status(200).json({
+				success: true,
+				message: "Data fetched successfully",
+				revenueData,
+				salesData,
+				totalUser,
+				pendingRequest,
+				completedRequest,
+				totalRevenue,
+			});
+		} catch (error) {
+			console.error("Error fetching admin:", error);
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while fetching data",
+			});
+		}
 	}
 
 	async setArchived(req, res) {
@@ -557,6 +762,8 @@ class RequestRouter {
 				],
 			});
 
+			// console.log(request);
+			// return;
 			if (!request) {
 				return res.status(404).json({
 					success: false,
@@ -604,6 +811,7 @@ class RequestRouter {
 
 			const welcomeMessage = `Hello, ${targetUser.firstname} ${targetUser.lastname} (${targetUser.username})!\n\nI am ${user.User.firstname} ${user.User.lastname}.\nYou can just call me ${user.User.username}. I will be your chat partner for this request.\n\nFeel free to reach out with any questions about your request!`;
 
+			
 			if (!chat) {
 				chat = await Chat.create({
 					userId: targetUser.id,
@@ -669,7 +877,6 @@ class RequestRouter {
 
 		try {
 			const request = await Request.findOne({ where: { id } });
-
 			res.send({
 				success: true,
 				data: request,
@@ -692,8 +899,8 @@ class RequestRouter {
 			const user = await Employee.findOne({
 				where: { userId: staffId },
 			});
-			console.log(user);
-			console.log(staffId);
+			// console.log(user);
+			// console.log(staffId);
 			whereClause["assignedEmployee"] = user.id;
 		}
 		try {
@@ -736,6 +943,73 @@ class RequestRouter {
 			res.send({
 				success: false,
 				message: `An error occurred while creating the request. ${error}`,
+			});
+		}
+	}
+
+	async setAppointment(req, res) {
+		const { id, appointmentDate, appointmentNotes } = req.body;
+		try {
+			const request = await Request.findByPk(id, {
+				include: {
+					model: Employee,
+					include: {
+						model: User,
+					},
+				},
+			});
+			if (!request) {
+				return res.status(404).send({
+					success: false,
+					message: "Request not found.",
+				});
+			}
+			const user = await User.findByPk(request.userId);
+			if (!user) {
+				return res.status(404).send({
+					success: false,
+					message: "User not found.",
+				});
+			}
+			await Appointment.create({
+				requestId: id,
+				userEmail: user.email,
+				staffId: request.Employee.User.id,
+				appointmentDate: appointmentDate,
+				appointmentNotes: appointmentNotes,
+				appointmentPeople:
+					request.Employee.User.firstname +
+					" " +
+					request.Employee.User.lastname,
+			});
+
+			await request.update({
+				status: "APPOINTED",
+			});
+
+			await ActivityLog.create({
+				message: `Request ${id} has been marked as appointed. Request has been appointed at ${appointmentDate}.`,
+			});
+			if (user) {
+				const subject = "Your are appointed for Service";
+				const text = `Dear ${user.firstname}, your service request has been successfully processed. We appointed you in this date ${appointmentDate}.`;
+				const body = `
+				<p>Dear ${user.firstname} ${user.lastname},</p>
+				<p>We are pleased to inform you that your service request has been successfully processed. We appointed you in this date ${appointmentDate}. Please wait for further notice.</p>
+				<p>If you have any further questions or require additional services, feel free to reach out to us.</p>
+				<p>Best regards,<br/>The Team</p>
+			`;
+				sendEmailToUser(user.email, subject, text, body);
+			}
+			res.send({
+				success: true,
+				message: "Service request was successfully appointed.",
+			});
+		} catch (error) {
+			console.error("Error appointing request:", error);
+			res.send({
+				success: false,
+				message: `An error occurred while appointing the request. ${error.message}`,
 			});
 		}
 	}
@@ -1102,15 +1376,15 @@ class RequestRouter {
 							"location",
 						],
 					},
-					{
-						model: Employee,
-						include: [
-							{
-								model: User,
-								attributes: ["firstname", "lastname"],
-							},
-						],
-					},
+					// {
+					// 	model: Employee,
+					// 	include: [
+					// 		{
+					// 			model: User,
+					// 			attributes: ["firstname", "lastname"],
+					// 		},
+					// 	],
+					// },
 					{
 						model: Request,
 						attributes: { exclude: [] },
@@ -1544,6 +1818,48 @@ class UserRouter {
 			"/deleteEmployee",
 			expressAsyncHandler(this.deleteEmployee)
 		);
+		this.router.post("/updateProfile", expressAsyncHandler(this.updateProfile));
+	}
+
+	async updateProfile(req, res) {
+		const {
+			id,
+			image,
+			email,
+			username,
+			firstname,
+			lastname,
+			location,
+		} = req.body;
+
+		try {
+			const user = await User.findByPk(id);
+			if (!user) {
+				res.send({
+					success: false,
+					message: `User with ID ${id} not found.`,
+				});
+				return;
+			}
+
+			await user.update({
+				profileImg: image,
+				email: email,
+				username: username,
+				firstname: firstname,
+				lastname: lastname,
+				location: location,
+			});
+			res.send({
+				success: true,
+				user
+			});
+		} catch (error) {
+			res.send({
+				success: false,
+				message: `An error occurred while updating the user. ${error}`,
+			});
+		}
 	}
 
 	async sendRequest(req, res) {
@@ -1737,9 +2053,20 @@ class UserRouter {
 			return;
 		}
 
+
+
 		let user = await AllUserRequest.findOne({
 			where: { email },
 		});
+		if (user) {
+			res.send({
+				success: false,
+				message: `User email already being used.`,
+			});
+			return;
+		}
+
+		user = await User.findOne({where: {email}});
 		if (user) {
 			res.send({
 				success: false,

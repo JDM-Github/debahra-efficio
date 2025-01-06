@@ -24,8 +24,7 @@ const headers = [
 	"ID",
 	"Request ID",
 	"Service Name",
-	"User Email",
-	"Assigned Staff",
+	"Customer Email",
 	"Start Date",
 	"Created At",
 	"Actions",
@@ -37,7 +36,6 @@ const renderRow = (item) => (
 		<td>{item.Request.id}</td>
 		<td>{item.Request.Service.serviceName}</td>
 		<td>{item.userEmail}</td>
-		<td>{item.appointmentPeople}</td>
 		<td>{item.appointmentDate.split("T")[0]}</td>
 		<td>{item.createdAt.split("T")[0]}</td>
 	</>
@@ -58,7 +56,7 @@ const isApplicationPDF = (extension) => {
 	return extension.toLowerCase() === "pdf";
 };
 
-export default function Appointment() {
+export default function Appointment({ user, changeURL }) {
 	const [requestData, setRequestData] = useState([]);
 	const [currPage, setCurrPage] = useState(1);
 	const [total, setTotal] = useState(0);
@@ -79,7 +77,7 @@ export default function Appointment() {
 			icon: faEye,
 			className: "view-btn",
 			label: "VIEW",
-			onClick: (id, item) => viewServiceRequest(item.Request),
+			onClick: (id, item) => viewServiceRequest(item.Request.id),
 		},
 		{
 			icon: faEye,
@@ -87,7 +85,31 @@ export default function Appointment() {
 			label: "APPOINTMENT",
 			onClick: (id, item) => viewAppointment(item),
 		},
+		{
+			icon: faCheck,
+			className: "done-btn",
+			label: "COMPLETE",
+			onClick: (id, item) => completeRequest(item),
+		},
 	];
+
+	const completeRequest = async (item) => {
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"request/completeRequest",
+				{ id: item.requestId }
+			);
+			if (!data.success) {
+				toast.error(data.message || "Can't complete the request");
+			} else {
+				toast.success("Service completed successfully!");
+			}
+		} catch (error) {
+			toast.error(`An error occurred while logging in. ${error}`);
+		}
+	};
+
 	const viewAppointment = async (item) => {
 		setAppointmentDate(
 			new Date(item.appointmentDate).toISOString().split("T")[0]
@@ -101,7 +123,7 @@ export default function Appointment() {
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"appointment/get_appointments",
-				{ currPage, limit }
+				{ staffId: user.id, currPage, limit }
 			);
 			if (data.success === false) {
 				toast.error(
@@ -117,27 +139,25 @@ export default function Appointment() {
 		}
 	};
 
-	const viewServiceRequest = async (request) => {
-		setServiceData(request);
-		setShowServiceModal(true);
-		// try {
-		// 	const data = await RequestHandler.handleRequest(
-		// 		"post",
-		// 		"request/view_service",
-		// 		{ id }
-		// 	);
-		// 	if (data.success === false) {
-		// 		toast.error(
-		// 			data.message ||
-		// 				"Error occurred. Please check your credentials."
-		// 		);
-		// 	} else {
-		// 		setServiceData(data.data);
-		// 		setShowServiceModal(true);
-		// 	}
-		// } catch (error) {
-		// 	toast.error(`An error occurred while requesting data. ${error}`);
-		// }
+	const viewServiceRequest = async (id) => {
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"request/view_service",
+				{ id }
+			);
+			if (data.success === false) {
+				toast.error(
+					data.message ||
+						"Error occurred. Please check your credentials."
+				);
+			} else {
+				setServiceData(data.data);
+				setShowServiceModal(true);
+			}
+		} catch (error) {
+			toast.error(`An error occurred while requesting data. ${error}`);
+		}
 	};
 
 	useEffect(() => {
@@ -146,7 +166,7 @@ export default function Appointment() {
 
 	return (
 		<div className="appointment">
-			<TopBar clickHandler={null} />
+			<TopBar clickHandler={() => changeURL("profile")} />
 			<div className="main-appointment">
 				<div className="title">All Appointment</div>
 				<Tabulator

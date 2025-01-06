@@ -28,7 +28,7 @@ module.exports = {
 			username: faker.internet.username(),
 			firstname: faker.person.firstName(),
 			lastname: faker.person.lastName(),
-			email: "test",
+			email: "jdmaster888@gmail.com",
 			password: hashedPassword,
 			location: faker.location.city(),
 			isAdmin: false,
@@ -36,6 +36,20 @@ module.exports = {
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		});
+
+		// users.push({
+		// 	profileImg: faker.image.avatar(), // Use image.avatar to generate a random avatar image URL
+		// 	username: faker.internet.username(),
+		// 	firstname: faker.person.firstName(),
+		// 	lastname: faker.person.lastName(),
+		// 	email: "test@gmail.com",
+		// 	password: hashedPassword,
+		// 	location: faker.location.city(),
+		// 	isAdmin: false,
+		// 	isEmployee: true,
+		// 	createdAt: new Date(),
+		// 	updatedAt: new Date(),
+		// });
 
 		await queryInterface.bulkInsert("Users", users);
 	},

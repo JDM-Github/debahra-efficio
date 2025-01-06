@@ -115,11 +115,11 @@ class App {
 								currency: "PHP",
 								type: "gcash",
 								redirect: {
-									success: `https://debahra.netlify.app/client/payment-success?user=${userId}&body=${encodeURIComponent(
+									success: `http://localhost:3000/client/payment-success?user=${userId}&body=${encodeURIComponent(
 										JSON.stringify(body)
 									)}`,
-									expired: `https://debahra.netlify.app/client/payment-failed?user=${userId}`,
-									failed: `https://debahra.netlify.app/client/payment-failed?user=${userId}`,
+									expired: `http://localhost:3000/client/payment-failed?user=${userId}`,
+									failed: `http://localhost:3000/client/payment-failed?user=${userId}`,
 								},
 							},
 						},

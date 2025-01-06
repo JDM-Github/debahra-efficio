@@ -109,7 +109,7 @@ export default function OngoingRequest() {
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"request/get_request_ongoing",
-				{ currPage, limit }
+				{ currPage, limit, status: "VERIFIED" }
 			);
 			if (data.success === false) {
 				toast.error(

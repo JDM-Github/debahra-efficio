@@ -13,7 +13,7 @@ const headers = [
 	"ID",
 	"Full Name",
 	"Email",
-	"Assigned Staff",
+	// "Assigned Staff",
 	"Service Name",
 	"Amount",
 	"Type",
@@ -26,9 +26,9 @@ const renderRow = (item) => (
 		<td>{item.id}</td>
 		<td>{item.User.firstname + " " + item.User.lastname}</td>
 		<td>{item.User.email}</td>
-		<td>
-			{item.Employee.User.firstname + " " + item.Employee.User.lastname}
-		</td>
+		{/* <td> */}
+			{/* {item.Employee.User.firstname + " " + item.Employee.User.lastname} */}
+		{/* </td> */}
 		<td>{item.Request.Service.serviceName}</td>
 		<td>{item.amount}</td>
 		<td>{item.typeOfTransaction}</td>

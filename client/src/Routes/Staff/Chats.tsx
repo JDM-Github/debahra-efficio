@@ -104,7 +104,8 @@ function ChatList({ setChatSetup, setTopActive }) {
 							onClick={() => {
 								setChatSetup({
 									chatPartner: chat.User.username,
-									partnerId: chat.userId,
+									// partnerId: null
+									// partnerId: chat.User.id,
 								});
 								setTopActive("client");
 							}}
@@ -161,7 +162,8 @@ export default function Chats({ changeURL }) {
 				);
 				if (data.success) {
 					setRequest(data.data);
-					// alert(JSON.stringify(data.data));
+					alert(JSON.stringify(data.data));
+
 				} else {
 					toast.error(
 						data.message ||

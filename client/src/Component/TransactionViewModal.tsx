@@ -29,10 +29,10 @@ const TransactionViewModal = ({ isOpen, onClose, transactionDetail }) => {
 					<p>
 						<strong>Email:</strong> {User?.email}
 					</p>
-					<p>
+					{/* <p>
 						<strong>Assigned Staff:</strong>{" "}
 						{Employee?.User?.firstname} {Employee?.User?.lastname}
-					</p>
+					</p> */}
 					<p>
 						<strong>Service Name:</strong>{" "}
 						{Request?.Service?.serviceName}

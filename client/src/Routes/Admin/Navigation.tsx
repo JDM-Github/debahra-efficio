@@ -118,6 +118,19 @@ export default function AdminNavigation() {
 					</NavLink>
 
 					<NavLink
+						to="appointment"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faEnvelope}
+							className="nav-icon"
+						/>
+						<div>Appointment</div>
+					</NavLink>
+
+					<NavLink
 						to="completed-request"
 						className={({ isActive }) =>
 							isActive ? "nav-items active-link" : "nav-items"
@@ -164,7 +177,7 @@ export default function AdminNavigation() {
 						}
 					>
 						<FontAwesomeIcon
-							icon={faListAlt} // Icon for Activity Log
+							icon={faListAlt}
 							className="nav-icon"
 						/>
 						<div>Activity Log</div>

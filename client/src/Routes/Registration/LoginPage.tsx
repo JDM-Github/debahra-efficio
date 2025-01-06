@@ -135,7 +135,7 @@ export default function LoginPage() {
 						/>
 						<div
 							className="relative"
-							style={{ marginBottom: "20px !important" }}
+							style={{ marginBottom: "30px !important" }}
 						>
 							<input
 								type={showPassword ? "text" : "password"}
@@ -194,6 +194,7 @@ export default function LoginPage() {
 							</span>
 						</div>
 						<button
+							className="mt-6"
 							type="submit"
 							onClick={handleLogin}
 							onKeyDown={(e) => {
@@ -220,7 +221,7 @@ export default function LoginPage() {
 						<h1>
 							<center>Request Register</center>
 						</h1>
-
+						
 						<input
 							name="firstName"
 							type="text"

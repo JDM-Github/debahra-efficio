@@ -229,6 +229,83 @@ type ChatWindowProps = {
 	staffId?: string;
 };
 
+
+const AppointmentModal = ({ isOpen, onClose, onSave }) => {
+	const [appointmentDate, setAppointmentDate] = useState("");
+	const [appointmentNotes, setAppointmentNotes] = useState("");
+
+	if (!isOpen) return null;
+
+	const handleSave = (e) => {
+		e.preventDefault();
+		onSave({ appointmentDate, appointmentNotes });
+		onClose();
+	};
+
+	return (
+		<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+			<div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+				<h2 className="text-xl font-semibold mb-4">
+					Schedule Appointment
+				</h2>
+				<form onSubmit={handleSave}>
+					<div className="mb-4">
+						<label
+							htmlFor="appointmentDate"
+							className="block text-sm font-medium text-gray-700"
+						>
+							Date
+						</label>
+						<input
+							type="date"
+							id="appointmentDate"
+							name="appointmentDate"
+							value={appointmentDate}
+							onChange={(e) => setAppointmentDate(e.target.value)}
+							className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+							required
+						/>
+					</div>
+					<div className="mb-4">
+						<label
+							htmlFor="appointmentNotes"
+							className="block text-sm font-medium text-gray-700"
+						>
+							Notes
+						</label>
+						<textarea
+							id="appointmentNotes"
+							name="appointmentNotes"
+							rows={4}
+							value={appointmentNotes}
+							onChange={(e) =>
+								setAppointmentNotes(e.target.value)
+							}
+							className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+							placeholder="Add any notes about the appointment..."
+						></textarea>
+					</div>
+					<div className="flex justify-end space-x-3">
+						<button
+							type="button"
+							className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+							onClick={onClose}
+						>
+							Cancel
+						</button>
+						<button
+							type="submit"
+							className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-blue-700"
+						>
+							Save
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	);
+};
+
 export default function ChatWindow({
 	chatPartner,
 	request = null,
@@ -275,13 +352,35 @@ export default function ChatWindow({
 	const [isAddProgressStepModalOpen, setAddProgressStepModalOpen] =
 		useState(false);
 	const [progressSteps, setProgressSteps] = useState<string[]>([]);
-	const handleAddProgressStep = (stepType) =>
-		setProgressSteps([...progressSteps, stepType]);
 	const openAddProgressStepModal = () => setAddProgressStepModalOpen(true);
 	const closeAddProgressStepModal = () => setAddProgressStepModalOpen(false);
 
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	// alert(request?.id);
+
+	const handleSave = async (appointmentData) => {
+		
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"request/setAppointment",
+				{
+					id: request?.id,
+					appointmentDate: appointmentData.appointmentDate,
+					appointmentNotes: appointmentData.appointmentNotes,
+				}
+			);
+			if (!data.success) {
+				toast.error(data.message || "Can't complete the request");
+			} else {
+				toast.success("Service completed successfully!");
+			}
+		} catch (error) {
+			toast.error(`An error occurred while logging in. ${error}`);
+		}
+	};
+
 	// USE FOR OFFER
-	const createOffer = () => setIsOfferModalOpen(true);
 	const submitOffer = () => {
 		const offerString = `::downpayment::"${downpaymentPrice}",::totalprice::"${totalPrice}"`;
 		handleSendMessage(offerString);
@@ -407,20 +506,22 @@ export default function ChatWindow({
 	};
 
 	const completeRequest = async () => {
-		try {
-			const data = await RequestHandler.handleRequest(
-				"post",
-				"request/completeRequest",
-				{ id: request?.id }
-			);
-			if (!data.success) {
-				toast.error(data.message || "Can't complete the request");
-			} else {
-				toast.success("Service completed successfully!");
-			}
-		} catch (error) {
-			toast.error(`An error occurred while logging in. ${error}`);
-		}
+		// alert(JSON.stringify(request));
+		setIsModalOpen(true);
+		// try {
+		// 	const data = await RequestHandler.handleRequest(
+		// 		"post",
+		// 		"request/createAppointment",
+		// 		{ id: request?.id, userId: request?.userId }
+		// 	);
+		// 	if (!data.success) {
+		// 		toast.error(data.message || "Can't complete the request");
+		// 	} else {
+		// 		toast.success("Service completed successfully!");
+		// 	}
+		// } catch (error) {
+		// 	toast.error(`An error occurred while logging in. ${error}`);
+		// }
 	};
 	const handleDelete = (index) => {};
 
@@ -502,6 +603,7 @@ export default function ChatWindow({
 					{user.isEmployee &&
 						request &&
 						request.status != "COMPLETED" &&
+						request.status != "APPOINTED" &&
 						staffTarget !== "staffadmin" && (
 							<button
 								className="offer"
@@ -513,9 +615,10 @@ export default function ChatWindow({
 					{user.isEmployee &&
 						request &&
 						request.status != "COMPLETED" &&
+						request.status != "APPOINTED" &&
 						staffTarget !== "staffadmin" && (
 							<button className="offer" onClick={completeRequest}>
-								Complete
+								Set Appointment
 							</button>
 						)}
 
@@ -567,6 +670,12 @@ export default function ChatWindow({
 					</div>
 				)}
 			</div>
+			{/* AppointmentModal */}
+			<AppointmentModal
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				onSave={handleSave}
+			/>
 			{transactionModal && (
 				<TransactionModal
 					downpaymentPrice={downpaymentPrice}

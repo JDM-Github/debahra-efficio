@@ -69,6 +69,19 @@ export default function StaffNavigation() {
 					</NavLink>
 
 					<NavLink
+						to="appointment"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faEnvelope}
+							className="nav-icon"
+						/>
+						<div>Appointment</div>
+					</NavLink>
+
+					<NavLink
 						to="completed-request"
 						className={({ isActive }) =>
 							isActive ? "nav-items active-link" : "nav-items"

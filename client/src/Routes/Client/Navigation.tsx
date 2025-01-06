@@ -91,6 +91,18 @@ export default function ClientNavigation() {
 						/>
 						<div>Ongoing Requests</div>
 					</NavLink>
+					<NavLink
+						to="appointment"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon
+							icon={faEnvelope}
+							className="nav-icon"
+						/>
+						<div>Appointment</div>
+					</NavLink>
 
 					<NavLink
 						to="completed-request"

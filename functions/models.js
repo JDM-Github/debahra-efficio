@@ -238,14 +238,11 @@ const Appointment = sequelize.define(
 				key: "id",
 			},
 		},
+		staffId: { type: DataTypes.INTEGER, allowNull: false },
+		userEmail: { type: DataTypes.STRING, defaultValue: "" },
 		appointmentDate: { type: DataTypes.DATE, allowNull: false },
 		appointmentPeople: { type: DataTypes.STRING, defaultValue: "" },
 		appointmentNotes: { type: DataTypes.STRING, defaultValue: "" },
-		status: {
-			type: DataTypes.STRING,
-			allowNull: false,
-			defaultValue: "ONGOING",
-		},
 	},
 	{
 		timestamps: true,

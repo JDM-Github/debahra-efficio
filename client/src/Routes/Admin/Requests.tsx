@@ -113,18 +113,18 @@ export default function Requests() {
 				else setIsArchived(e === "archived");
 			},
 		},
-		{
-			placeholder: "ALL",
-			options: [
-				{ value: "all", label: "ALL", icon: faCalendarCheck },
-				{ value: "yearly", label: "YEARLY", icon: faCalendarAlt },
-				{ value: "monthly", label: "MONTHLY", icon: faCalendar },
-			],
-			onChange: (e) => {
-				// if (e == "all") setIsArchived(null);
-				// else setIsArchived(e === "archived");
-			},
-		},
+		// {
+		// 	placeholder: "ALL",
+		// 	options: [
+		// 		{ value: "all", label: "ALL", icon: faCalendarCheck },
+		// 		{ value: "yearly", label: "YEARLY", icon: faCalendarAlt },
+		// 		{ value: "monthly", label: "MONTHLY", icon: faCalendar },
+		// 	],
+		// 	onChange: (e) => {
+		// 		// if (e == "all") setIsArchived(null);
+		// 		// else setIsArchived(e === "archived");
+		// 	},
+		// },
 	];
 
 	const actions = [
@@ -187,6 +187,7 @@ export default function Requests() {
 
 	const acceptRequest = async (id) => {
 		toast.info("Please assign the employee.");
+		alert(id);
 		setTargetId(id);
 		setIsModalOpen(true);
 	};

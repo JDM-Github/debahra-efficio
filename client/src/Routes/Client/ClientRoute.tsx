@@ -18,6 +18,7 @@ import CancelledRequest from "./CancelledRequest.tsx";
 import { ToastContainer } from "react-toastify";
 import PaymentSuccess from "./PaymentSuccess.tsx";
 import PaymentFailed from "./PaymentFailed.tsx";
+import Appointment from "./Appointment.tsx";
 
 export default function ClientRoute() {
 	const navigate = useNavigate();
@@ -96,6 +97,10 @@ export default function ClientRoute() {
 								changeURL={changeURL}
 							/>
 						}
+					/>
+					<Route
+						path="appointment"
+						element={<Appointment user={user} />}
 					/>
 					<Route
 						path="cancelled-request"

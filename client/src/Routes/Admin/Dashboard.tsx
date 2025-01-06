@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../Component/TopBar.tsx";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -14,6 +14,8 @@ import {
 	Legend,
 	BarElement,
 } from "chart.js";
+import RequestHandler from "../../Functions/RequestHandler.js";
+import { toast } from "react-toastify";
 
 ChartJS.register(
 	CategoryScale,
@@ -27,27 +29,33 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
-	const data = {
-		labels: [
-			"Week 1",
-			"Week 2",
-			"Week 3",
-			"Week 4",
-			"Week 5",
-			"Week 6",
-			"Week 7",
-		],
-		datasets: [
-			{
-				label: "Revenue (₱)",
-				data: [2000, 3000, 2500, 4000, 3500, 5000, 6000],
-				borderColor: "#34D399",
-				backgroundColor: "rgba(52, 211, 153, 0.2)",
-				fill: true,
-				tension: 0.4,
-			},
-		],
-	};
+	// const data = {
+	// 	labels: [
+	// 		"Week 1",
+	// 		"Week 2",
+	// 		"Week 3",
+	// 		"Week 4",
+	// 		"Week 5",
+	// 		"Week 6",
+	// 		"Week 7",
+	// 	],
+	// 	datasets: [
+	// 		{
+	// 			label: "Revenue (₱)",
+	// 			data: [2000, 3000, 2500, 4000, 3500, 5000, 6000],
+	// 			borderColor: "#34D399",
+	// 			backgroundColor: "rgba(52, 211, 153, 0.2)",
+	// 			fill: true,
+	// 			tension: 0.4,
+	// 		},
+	// 	],
+	// };
+	const [revenueData, setRevenueData] = useState(null);
+	const [salesData, setSalesData] = useState(null);
+	const [totalUser, settotalUser] = useState(0);
+	const [pending, setTotalPending] = useState(0);
+	const [completed, setTotalCompleted] = useState(0);
+	const [revenue, setTotalRevenue] = useState(0);
 
 	const options = {
 		responsive: true,
@@ -75,18 +83,6 @@ export default function Dashboard() {
 		},
 	};
 
-	const salesData = {
-		labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-		datasets: [
-			{
-				label: "Sales (₱)",
-				data: [1000, 1500, 1200, 1800, 1600, 2000],
-				backgroundColor: "rgba(34,197,94,0.6)",
-				borderColor: "rgba(34,197,94,1)",
-				borderWidth: 1,
-			},
-		],
-	};
 
 	const chartOptions = {
 		responsive: true,
@@ -112,6 +108,33 @@ export default function Dashboard() {
 		},
 	};
 
+	const loadAdmin = async () => {
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"request/load_admin"
+			);
+			if (data.success === false) {
+				toast.error(
+					data.message ||
+						"Error occurred. Please check your credentials."
+				);
+			} else {
+				setRevenueData(data.revenueData);
+				setSalesData(data.salesData);
+				settotalUser(data.totalUser);
+				setTotalPending(data.pendingRequest);
+				setTotalCompleted(data.completedRequest);
+				setTotalRevenue(data.totalRevenue);
+			}
+		} catch (error) {
+			toast.error(`An error occurred while requesting data. ${error}`);
+		}
+	};
+	useEffect(() => {
+		loadAdmin();
+	});
+
 	return (
 		<div className="bg-gray-100 min-h-screen flex flex-col">
 			<TopBar clickHandler={null} />
@@ -134,7 +157,7 @@ export default function Dashboard() {
 						<div className="bg-green-50 p-3 rounded-lg shadow-sm flex items-center justify-between border-l-4 border-green-600">
 							<span className="text-gray-500">Total Users</span>
 							<span className="text-green-600 font-bold">
-								1,250
+								{totalUser}
 							</span>
 						</div>
 						<div className="bg-green-50 p-3 rounded-lg shadow-sm flex items-center justify-between border-l-4 border-yellow-600">
@@ -142,7 +165,7 @@ export default function Dashboard() {
 								Pending Requests
 							</span>
 							<span className="text-yellow-600 font-bold">
-								65
+								{pending}
 							</span>
 						</div>
 						<div className="bg-green-50 p-3 rounded-lg shadow-sm flex items-center justify-between border-l-4 border-blue-600">
@@ -150,13 +173,13 @@ export default function Dashboard() {
 								Completed Requests
 							</span>
 							<span className="text-blue-600 font-bold">
-								1,125
+								{completed}
 							</span>
 						</div>
 						<div className="bg-green-50 p-3 rounded-lg shadow-sm flex items-center justify-between border-l-4 border-green-600">
 							<span className="text-gray-500">Revenue</span>
 							<span className="text-green-600 font-bold">
-								₱12,500
+								₱{revenue}
 							</span>
 						</div>
 					</div>
@@ -174,7 +197,9 @@ export default function Dashboard() {
 						</div>
 
 						<div className="h-[300px] lg:h-[400px]">
-							<Line data={data} options={options} />
+							{revenueData && (
+								<Line data={revenueData} options={options} />
+							)}
 						</div>
 					</div>
 
@@ -184,7 +209,9 @@ export default function Dashboard() {
 						</h3>
 						{/* Bar chart container */}
 						<div className="h-[300px] lg:h-[400px] bg-gray-100 rounded-lg p-4">
-							<Bar data={salesData} options={chartOptions} />
+							{salesData && (
+								<Bar data={salesData} options={chartOptions} />
+							)}
 						</div>
 					</div>
 				</div>

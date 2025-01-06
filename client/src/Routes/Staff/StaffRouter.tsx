@@ -13,6 +13,8 @@ import CancelledRequest from "./CancelledRequest.tsx";
 import Transaction from "./Transaction.tsx";
 import HandledUsers from "./HandledUsers.tsx";
 import { ToastContainer } from "react-toastify";
+import Appointment from "./Appointment.tsx";
+import Profile from "../Client/Profile.tsx";
 
 export default function StaffRoute() {
 	const navigate = useNavigate();
@@ -65,6 +67,16 @@ export default function StaffRoute() {
 								changeURL={changeURL}
 								user={user}
 							/>
+						}
+					/>
+					<Route
+						path="profile"
+						element={<Profile changeURL={changeURL} />}
+					/>
+					<Route
+						path="appointment"
+						element={
+							<Appointment user={user} changeURL={changeURL} />
 						}
 					/>
 					<Route

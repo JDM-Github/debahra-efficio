@@ -15,6 +15,7 @@ import Transaction from "./Transaction.tsx";
 import ActivityLog from "./ActivityLog.tsx";
 import { ToastContainer } from "react-toastify";
 import CancelledRequest from "./CancelledRequest.tsx";
+import Appointment from "./Appointment.tsx";
 
 export default function AdminRoute() {
 	return (
@@ -49,7 +50,7 @@ export default function AdminRoute() {
 					/>
 					<Route path="activity-log" element={<ActivityLog />} />
 
-					{/* <Route path="appointment" element={<Appointment />} /> */}
+					<Route path="appointment" element={<Appointment />} />
 					<Route index path="/" element={<Dashboard />} />
 				</Routes>
 			</div>
