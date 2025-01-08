@@ -42,7 +42,7 @@ export default function StaffRoute() {
 					/>
 					<Route
 						path="chats"
-						element={<Chats changeURL={changeURL} />}
+						element={<Chats changeURL={changeURL} user={user} />}
 					/>
 
 					<Route

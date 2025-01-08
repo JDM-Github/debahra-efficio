@@ -104,6 +104,7 @@ function ChatList({ setChatSetup, setTopActive }) {
 							onClick={() => {
 								setChatSetup({
 									chatPartner: chat.User.username,
+									partnerId: chat.userId,
 									// partnerId: null
 									// partnerId: chat.User.id,
 								});
@@ -144,7 +145,7 @@ function ChatContainer({ setChatSetup }) {
 	);
 }
 
-export default function Chats({ changeURL }) {
+export default function Chats({ changeURL, user }) {
 	interface ChatSetup {
 		chatPartner: string;
 		partnerId: string;
@@ -158,12 +159,13 @@ export default function Chats({ changeURL }) {
 				const data = await RequestHandler.handleRequest(
 					"post",
 					"request/view_user_service",
-					{ userId: chatSetup?.partnerId }
+					{
+						userId: chatSetup?.partnerId,
+						staffId: user.id,
+					}
 				);
 				if (data.success) {
 					setRequest(data.data);
-					alert(JSON.stringify(data.data));
-
 				} else {
 					toast.error(
 						data.message ||

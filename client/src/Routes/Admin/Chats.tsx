@@ -60,7 +60,6 @@ function ChatList({ setChatSetup, isEmployeeActive }) {
 				);
 
 				if (data.success) {
-					// alert(JSON.stringify(data.chats));
 					setChats(data.chats);
 				} else {
 					toast.error(

@@ -66,6 +66,7 @@ export default function Requests() {
 	const [isArchived, setIsArchived] = useState<boolean | null>(false);
 
 	const [targetId, setTargetId] = useState(null);
+	const [targetUserId, setTargetUserId] = useState(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [appointmentData, setAppointmentData] = useState({
 		staffId: "",
@@ -139,7 +140,7 @@ export default function Requests() {
 			className: "done-btn",
 			label: "ASSIGN",
 			onCondition: (item) => !item.isArchived,
-			onClick: (id) => acceptRequest(id),
+			onClick: (id, item) => acceptRequest(item),
 		},
 		{
 			icon: faArchive,
@@ -185,10 +186,10 @@ export default function Requests() {
 		}
 	};
 
-	const acceptRequest = async (id) => {
+	const acceptRequest = async (item) => {
 		toast.info("Please assign the employee.");
-		alert(id);
-		setTargetId(id);
+		setTargetUserId(item.userId);
+		setTargetId(item.id);
 		setIsModalOpen(true);
 	};
 
@@ -241,6 +242,7 @@ export default function Requests() {
 			</div>
 			{isModalOpen && (
 				<AppointmentModal
+					targetId={targetUserId}
 					onClose={() => setIsModalOpen(false)}
 					appointmentData={appointmentData}
 					onCreate={handleCreate}

@@ -20,6 +20,7 @@ const {
 	ActivityLog,
 } = require("./models");
 const sendEmail = require("./emailSender");
+const { fa } = require("@faker-js/faker");
 
 cloudinary.config({
 	cloud_name: "djheiqm47",
@@ -827,6 +828,28 @@ class RequestRouter {
 						],
 					},
 				});
+			} else {
+				const userChatKey = `staff${user.User.id}`;
+				if (!chat.messages[userChatKey]) {
+					chat.messages[userChatKey] = [];
+				}
+
+				const newMessage = {
+					sender: user.User.id,
+					text: welcomeMessage,
+					replyText: "",
+					replyTo: "",
+				};
+
+				await chat.update({
+					messages: {
+						...chat.messages,
+						[userChatKey]: [
+							...chat.messages[userChatKey],
+							newMessage,
+						],
+					},
+				});
 			}
 
 			await request.update({
@@ -899,8 +922,6 @@ class RequestRouter {
 			const user = await Employee.findOne({
 				where: { userId: staffId },
 			});
-			// console.log(user);
-			// console.log(staffId);
 			whereClause["assignedEmployee"] = user.id;
 		}
 		try {
@@ -2330,8 +2351,9 @@ class UserRouter {
 	}
 
 	async getAllEmployeeNoPage(req, res) {
+		const { targetId } = req.body;
 		try {
-			const employee = await User.findAll({
+			const employees = await User.findAll({
 				where: {
 					isEmployee: true,
 				},
@@ -2346,9 +2368,28 @@ class UserRouter {
 					},
 				],
 			});
+
+			employees.forEach((employee) => {
+				const assignedUsers = employee.Employees[0]?.assignedUser;
+				console.log("AssignedUser:", assignedUsers);
+			});
+
+			const filteredEmployees = employees.filter((employee) => {
+				const assignedUsers = employee.Employees[0]?.assignedUser || [];
+				return !assignedUsers.includes(targetId);
+			});
+
+			if (filteredEmployees.length === 0) {
+				return res.send({
+					success: false,
+					message:
+						"No employee found",
+				});
+			}
+
 			res.json({
 				success: true,
-				data: employee,
+				data: filteredEmployees,
 			});
 		} catch (error) {
 			console.error("Error fetching account requests:", error);
@@ -2357,6 +2398,7 @@ class UserRouter {
 				message: "An error occurred while fetching requests",
 			});
 		}
+
 	}
 }
 // const multer = require("multer");

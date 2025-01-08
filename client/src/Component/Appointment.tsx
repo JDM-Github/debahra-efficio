@@ -17,6 +17,7 @@ interface User {
 }
 
 export default function AppointmentModal({
+	targetId,
 	onClose,
 	onCreate,
 	onCancel,
@@ -38,7 +39,10 @@ export default function AppointmentModal({
 		try {
 			const data = await RequestHandler.handleRequest(
 				"post",
-				"users/get_employee_no_page"
+				"users/get_employee_no_page",
+				{
+					targetId,
+				}
 			);
 			if (data.success === false) {
 				toast.error(
