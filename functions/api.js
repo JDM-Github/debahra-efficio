@@ -134,7 +134,7 @@ class App {
 						},
 					],
 					application_context: {
-						brand_name: "Your Brand Name",
+						brand_name: "EFFICIO",
 						landing_page: "BILLING",
 						user_action: "PAY_NOW",
 						return_url: `https://debahra.netlify.app/client/payment-success?user=${userId}&body=${encodeURIComponent(
