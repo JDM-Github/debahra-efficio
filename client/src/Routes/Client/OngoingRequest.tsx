@@ -69,12 +69,12 @@ export default function OngoingRequest({ user, changeURL }) {
 	const selectOptions = [];
 
 	const actions = [
-		{
-			icon: faEye,
-			className: "view-btn",
-			label: "CHAT",
-			onClick: (id, item) => viewServiceRequest(item),
-		},
+		// {
+		// 	icon: faEye,
+		// 	className: "view-btn",
+		// 	label: "CHAT",
+		// 	onClick: (id, item) => viewServiceRequest(item),
+		// },
 		{
 			icon: faEye,
 			className: "view-btn",

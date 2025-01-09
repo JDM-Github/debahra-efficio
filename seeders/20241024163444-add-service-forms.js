@@ -10,6 +10,7 @@ module.exports = {
 				serviceImg:
 					"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnOU0iPrhLJH7CQPgYM3Q-x7umeizS7holgw&s",
 				serviceDescription: "This is a DTI description",
+				servicePrice: 20,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			},
@@ -20,6 +21,7 @@ module.exports = {
 				serviceImg:
 					"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-JYXALwOtzTc34YlgNgGmNvpab4oxo0lfGQ&s",
 				serviceDescription: "This is a SSS description",
+				servicePrice: 25,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			},
@@ -30,6 +32,7 @@ module.exports = {
 				serviceImg:
 					"https://25174313.fs1.hubspotusercontent-eu1.net/hubfs/25174313/assets_moneymax/PagIBIG_Salary_Loan_1.jpg",
 				serviceDescription: "This is a PAG IBIG description",
+				servicePrice: 50,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			},
@@ -39,6 +42,7 @@ module.exports = {
 				serviceImg:
 					"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbJiXsPX6y6fLA9TFLh6aREMYVZK1yDmazDQ&s",
 				serviceDescription: "This is a PHILHEALTH description",
+				servicePrice: 60,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			},
@@ -49,6 +53,7 @@ module.exports = {
 				serviceImg:
 					"https://i.pinimg.com/736x/f7/ac/88/f7ac88a1963942fe198262445a200595.jpg",
 				serviceDescription: "This is a BIR description",
+				servicePrice: 123,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			},
@@ -58,6 +63,7 @@ module.exports = {
 					"https://www.pdffiller.com/preview/33/900/33900017.png",
 				serviceImg: "https://cdn.worldvectorlogo.com/logos/sec-1.svg",
 				serviceDescription: "This is a SEC description",
+				servicePrice: 400,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			},

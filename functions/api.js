@@ -102,48 +102,64 @@ class App {
 			);
 		});
 
-		const PAYMONGO_API_KEY = "sk_test_PoK58FtMrQaHHc2EyguAKYwj";
+		const paypal = require("@paypal/checkout-server-sdk");
+		const PAYPAL_CLIENT_ID =
+			"Af0tB87keOdzXZpl_Ib8lb86Udu5oTWSL-xHDwAz4q9GiBQSFbejrkAqY2QQU5XAlYJ5PyFc6wsM45Wq";
+		const PAYPAL_CLIENT_SECRET =
+			"EO6ufyuol6bxnX_E9HV9OmpqgD9SCWI5AEEohSaLYjBpJqbsVzv650YBQDWk7mZgPIPqE0IRpoQ5Gcyu";
+		const environment = new paypal.core.SandboxEnvironment(
+			PAYPAL_CLIENT_ID,
+			PAYPAL_CLIENT_SECRET
+		);
+		const client = new paypal.core.PayPalHttpClient(environment);
+
 		this.router.post("/create-payment", async (req, res) => {
 			const { amount, userId, body } = req.body;
 			try {
-				const sourceResponse = await axios.post(
-					"https://api.paymongo.com/v1/sources",
-					{
-						data: {
-							attributes: {
-								amount: amount * 100,
-								currency: "PHP",
-								type: "gcash",
-								redirect: {
-									success: `http://localhost:3000/client/payment-success?user=${userId}&body=${encodeURIComponent(
-										JSON.stringify(body)
-									)}`,
-									expired: `http://localhost:3000/client/payment-failed?user=${userId}`,
-									failed: `http://localhost:3000/client/payment-failed?user=${userId}`,
-								},
+				const formattedAmount = parseFloat(amount);
+				if (isNaN(formattedAmount)) {
+					throw new Error("Invalid amount provided");
+				}
+		
+				const orderRequest = new paypal.orders.OrdersCreateRequest();
+				orderRequest.requestBody({
+					intent: "CAPTURE",
+					purchase_units: [
+						{
+							amount: {
+								currency_code: "PHP",
+								value: formattedAmount.toFixed(2),
 							},
+							description: "Payment description",
 						},
+					],
+					application_context: {
+						brand_name: "Your Brand Name",
+						landing_page: "BILLING",
+						user_action: "PAY_NOW",
+						return_url: `https://debahra.netlify.app/client/payment-success?user=${userId}&body=${encodeURIComponent(
+							JSON.stringify(body)
+						)}`,
+						cancel_url: `https://debahra.netlify.app/client/payment-failed?user=${userId}`,
 					},
-					{
-						headers: {
-							Authorization: `Basic ${Buffer.from(
-								PAYMONGO_API_KEY
-							).toString("base64")}`,
-							"Content-Type": "application/json",
-						},
-					}
-				);
-				const gcashSource = sourceResponse.data.data;
+				});
+
+				const order = await client.execute(orderRequest);
+				const approvalUrl = order.result.links.find(
+					(link) => link.rel === "approve"
+				).href;
+
 				res.json({
-					redirectUrl: gcashSource.attributes.redirect.checkout_url,
+					redirectUrl: approvalUrl,
 				});
 			} catch (error) {
-				console.error("Error creating payment:", error);
+				console.error("Error creating PayPal payment:", error);
 				res.status(500).json({
-					error: "Failed to create GCash payment",
+					error: "Failed to create PayPal payment",
 				});
 			}
 		});
+
 	}
 
 	requestAccount(req, res) {
