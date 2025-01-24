@@ -46,6 +46,7 @@ const User = sequelize.define(
 			allowNull: true,
 			defaultValue: "",
 		},
+		companyName: { type: DataTypes.STRING, allowNull: false },
 		username: { type: DataTypes.STRING, allowNull: false },
 		firstname: {
 			type: DataTypes.STRING,
@@ -107,6 +108,7 @@ const Employee = sequelize.define("Employee", {
 });
 
 const AllUserRequest = sequelize.define("VerifiedUser", {
+	companyName: { type: DataTypes.STRING, allowNull: false },
 	username: { type: DataTypes.STRING, allowNull: false },
 	firstname: {
 		type: DataTypes.STRING,
@@ -133,6 +135,10 @@ const Service = sequelize.define(
 			defaultValue: "",
 		},
 		serviceURL: { type: DataTypes.STRING, allowNull: false },
+		serviceURLS: {
+			type: DataTypes.ARRAY(DataTypes.STRING),
+			defaultValue: []
+		},
 		serviceDescription: {
 			type: DataTypes.STRING,
 			defaultValue: "",
@@ -175,6 +181,10 @@ const Request = sequelize.define(
 			type: DataTypes.STRING,
 			allowNull: true,
 			defaultValue: "",
+		},
+		uploadedDocuments: {
+			type: DataTypes.JSON,
+			defaultValue: {},
 		},
 		assignedEmployee: {
 			type: DataTypes.INTEGER,
@@ -220,6 +230,10 @@ const Request = sequelize.define(
 			allowNull: true,
 		},
 		isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
+		certificate: {
+			type: DataTypes.JSON,
+			defaultValue: {},
+		},
 	},
 	{
 		timestamps: true,
@@ -286,7 +300,10 @@ const Transaction = sequelize.define(
 		},
 		uploadedProof: {
 			type: DataTypes.STRING,
-			allowNull: false,
+		},
+		uploadedProofs: {
+			type: DataTypes.JSON,
+			defaultValue: {}
 		},
 		referenceNumber: {
 			type: DataTypes.STRING,

@@ -34,6 +34,7 @@ const renderRow = (item) => (
 
 interface Service {
 	uploadedDocument: string;
+	uploadedDocuments: { fileName: string; url: string; isApproved: boolean }[];
 }
 
 export default function PendingRequest({ user, changeURL }) {
@@ -105,39 +106,63 @@ export default function PendingRequest({ user, changeURL }) {
 			</div>
 
 			{showServiceModal && serviceData && (
-				<div className="serviceModal">
-					{serviceData.uploadedDocument &&
-						Utility.isImage(
-							Utility.getFileExtension(
-								serviceData.uploadedDocument
-							)
-						) && (
-							<img
-								src={serviceData.uploadedDocument}
-								className="uploaded-img"
-								alt="Uploaded Preview"
-							/>
-						)}
-					{serviceData.uploadedDocument &&
-						Utility.isApplicationPDF(
-							Utility.getFileExtension(
-								serviceData.uploadedDocument
-							)
-						) && (
-							<iframe
-								src={serviceData.uploadedDocument}
-								className="uploaded-img"
-								title="Uploaded PDF Preview"
-							/>
-						)}
-					<div
-						className="close"
-						onClick={() => setShowServiceModal(false)}
-					>
-						&times;
+				<div className="serviceModal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+					<div className="modal-content bg-white rounded-lg shadow-lg overflow-hidden min-w-[50vw] w-full min-h-[80vh] max-h-[80vh] p-6">
+						<div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-4">
+							<h2 className="text-xl font-semibold border-l-4 border-green-600 pl-4">
+								Uploaded Documents
+							</h2>
+							<span
+								className="text-5xl text-gray-200 cursor-pointer hover:text-red-500"
+								onClick={() => setShowServiceModal(false)}
+							>
+								&times;
+							</span>
+						</div>
+
+						<div className="overflow-y-auto">
+							<table className="table-auto w-full border-collapse border border-gray-200 rounded-lg">
+								<thead>
+									<tr className="bg-green-100">
+										<th className="border border-gray-200 px-4 py-2 text-left text-gray-800 font-semibold">
+											File Name
+										</th>
+										<th className="border border-gray-200 px-4 py-2 text-gray-800 font-semibold">
+											Actions
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									{serviceData.uploadedDocuments.map(
+										(document, index) => (
+											<tr
+												key={index}
+												className="hover:bg-gray-50 transition-all duration-200"
+											>
+												<td className="border border-gray-200 px-4 py-2 text-gray-700">
+													{document.fileName}
+												</td>
+												<td className="border border-gray-200 px-4 py-2 text-center space-x-4">
+													<a
+														href={document.url}
+														download={
+															document.fileName
+														}
+														className="download-btn bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md"
+													>
+														DOWNLOAD
+													</a>
+												</td>
+											</tr>
+										)
+									)}
+								</tbody>
+							</table>
+						</div>
 					</div>
 				</div>
 			)}
+
 			<Copyright />
 		</div>
 	);

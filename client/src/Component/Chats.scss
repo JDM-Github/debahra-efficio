@@ -163,12 +163,12 @@
 		}
 	}
 
-	.service-info {
+	.service-info,
+	.service-info-client {
 		background-color: #1d2e12cc;
 		position: absolute;
 		width: 30%;
-		left: 2px;
-		top: 38px;
+		top: 44px;
 		padding: 10px;
 		box-sizing: border-box;
 		color: #ffffff;
@@ -182,6 +182,12 @@
 		* {
 			margin-bottom: 5px;
 		}
+	}
+	.service-info {
+		left: 2px;
+	}
+	.service-info-client {
+		right: 2px;
 	}
 	.service-info:hover {
 		opacity: 1;

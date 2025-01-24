@@ -12,7 +12,6 @@ class RequestHandler {
 		// di accessible sa link
 
 		// get, put, post, delete
-
 		const methodUse = method.toLowerCase();
 		const axiosMethod =
 			methodUse === "get"

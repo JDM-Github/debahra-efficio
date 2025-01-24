@@ -24,11 +24,28 @@ export default function Tabulator({
 	itemsPerPage,
 
 	total,
+	searchableHeaders,
 }) {
+	const [searchQuery, setSearchQuery] = useState("");
+	const filteredData = data.filter((item) => {
+		return searchableHeaders.some((header) => {
+			const fieldValue = item[header];
+
+			if (fieldValue) {
+				return fieldValue
+					.toString()
+					.toLowerCase()
+					.includes(searchQuery.toLowerCase());
+			}
+			return false;
+		});
+	});
 	return (
 		<div className="tabulator">
 			<TopTabulator
 				searchPlaceholder="Search..."
+				searchQuery={searchQuery}
+				onSearchChange={(e) => setSearchQuery(e.target.value)}
 				buttons={buttons}
 				selectOptions={selects}
 			/>
@@ -42,7 +59,7 @@ export default function Tabulator({
 						</tr>
 					</thead>
 					<tbody>
-						{data.map((item, rowIndex) => (
+						{filteredData.map((item, rowIndex) => (
 							<tr key={rowIndex}>
 								{renderRow(item)}
 								{actions && (

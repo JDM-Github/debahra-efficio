@@ -19,6 +19,7 @@ export default function LoginPage() {
 	});
 
 	const [requestInfo, setRequestInfo] = useState({
+		companyName: "",
 		firstName: "",
 		lastName: "",
 		username: "",
@@ -94,6 +95,7 @@ export default function LoginPage() {
 					"Request successful! Please wait for admin to verify your request"
 				);
 				setRequestInfo({
+					companyName: "",
 					firstName: "",
 					lastName: "",
 					username: "",
@@ -221,7 +223,15 @@ export default function LoginPage() {
 						<h1>
 							<center>Request Register</center>
 						</h1>
-						
+
+						<input
+							name="companyName"
+							type="text"
+							placeholder="Company Name"
+							onChange={handleRequestInfo}
+							value={requestInfo.companyName}
+						/>
+
 						<input
 							name="firstName"
 							type="text"

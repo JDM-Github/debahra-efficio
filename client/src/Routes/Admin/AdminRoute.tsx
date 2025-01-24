@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Dashboard from "./Dashboard.tsx";
@@ -16,17 +16,23 @@ import ActivityLog from "./ActivityLog.tsx";
 import { ToastContainer } from "react-toastify";
 import CancelledRequest from "./CancelledRequest.tsx";
 import Appointment from "./Appointment.tsx";
+import Services from "./Services.tsx";
 
 export default function AdminRoute() {
+	const [isShrunk, setIsShrunk] = useState(false);
 	return (
 		<div className="admin">
-			<Navigation />
+			<Navigation setIsShrunk={setIsShrunk} isShrunk={isShrunk}/>
 
-			<div className="admin-content">
+			<div className={`admin-content ${isShrunk ? "shrink" : ""}`}>
 				<Routes>
 					<Route path="chats" element={<Chats />} />
 					<Route path="accounts" element={<Accounts />} />
 					<Route path="employee" element={<Employees />} />
+					<Route
+						path="services"
+						element={<Services changeURL="" />}
+					/>
 					<Route
 						path="request-accounts"
 						element={<RequestAccount />}

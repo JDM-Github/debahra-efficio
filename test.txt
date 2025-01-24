@@ -1,18 +1,15 @@
-GAWA REACT
 
-EXPRESS - ( BACKEND )
-DATABASE - (DB Postresql - Sequelize)
-NETLIFY - Deploy ( Static )
-REACT - (Frontend) (client)
 
-BUILD - js, html, css
+/ DASHBOARD - PROGRESS
+- 
+- 
+- 
 
-netlify.toml - for deployment script
-package.json - scripting and dependencies
 
-Seeders - Pang create fake DATABASE
-- open terminal (ctrl+shift+c)
-- seed
+PROGRESS - SORT
 
-RESTAPI
-REQUEST - RESPONSE (API)
+/ CERTIFICATE
+ - AGREEMENT (SAKA PA (SPA))
+
+/ AUTO HIDE LEFT SIDE
+

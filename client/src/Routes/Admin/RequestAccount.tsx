@@ -151,6 +151,7 @@ export default function RequestAccount() {
 					setCurrentPage={setCurrPage}
 					itemsPerPage={limit}
 					total={total}
+					searchableHeaders={["id"]}
 				/>
 			</div>
 			<Copyright />

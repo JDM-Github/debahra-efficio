@@ -11,22 +11,6 @@ export default function ViewAppointmentModal({
 				<h2 className="text-xl font-semibold mb-4">View Appointment</h2>
 				<div className="mb-4">
 					<label
-						htmlFor="appointmentDate"
-						className="block text-sm font-medium text-gray-700"
-					>
-						Date
-					</label>
-					<input
-						type="date"
-						id="appointmentDate"
-						name="appointmentDate"
-						value={appointmentDate}
-						className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-						required
-					/>
-				</div>
-				<div className="mb-4">
-					<label
 						htmlFor="appointmentNotes"
 						className="block text-sm font-medium text-gray-700"
 					>

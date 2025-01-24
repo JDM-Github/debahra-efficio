@@ -116,6 +116,7 @@ export default function HandledUsers({ user, changeURL }) {
 					setCurrentPage={setCurrPage}
 					itemsPerPage={limit}
 					total={total}
+					searchableHeaders={["id"]}
 				/>
 			</div>
 			<Copyright />

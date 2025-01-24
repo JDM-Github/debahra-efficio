@@ -231,7 +231,7 @@ type ChatWindowProps = {
 
 
 const AppointmentModal = ({ isOpen, onClose, onSave }) => {
-	const [appointmentDate, setAppointmentDate] = useState("");
+	const [appointmentDate, setAppointmentDate] = useState(Date.now());
 	const [appointmentNotes, setAppointmentNotes] = useState("");
 
 	if (!isOpen) return null;
@@ -249,23 +249,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave }) => {
 					Schedule Appointment
 				</h2>
 				<form onSubmit={handleSave}>
-					<div className="mb-4">
-						<label
-							htmlFor="appointmentDate"
-							className="block text-sm font-medium text-gray-700"
-						>
-							Date
-						</label>
-						<input
-							type="date"
-							id="appointmentDate"
-							name="appointmentDate"
-							value={appointmentDate}
-							onChange={(e) => setAppointmentDate(e.target.value)}
-							className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-							required
-						/>
-					</div>
+
 					<div className="mb-4">
 						<label
 							htmlFor="appointmentNotes"
@@ -351,22 +335,17 @@ export default function ChatWindow({
 	// USE FOR PROGRESS
 	const [isAddProgressStepModalOpen, setAddProgressStepModalOpen] =
 		useState(false);
-	const [progressSteps, setProgressSteps] = useState<string[]>([]);
 	const openAddProgressStepModal = () => setAddProgressStepModalOpen(true);
 	const closeAddProgressStepModal = () => setAddProgressStepModalOpen(false);
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	// alert(request?.id);
-
 	const handleSave = async (appointmentData) => {
-		
 		try {
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"request/setAppointment",
 				{
 					id: request?.id,
-					appointmentDate: appointmentData.appointmentDate,
 					appointmentNotes: appointmentData.appointmentNotes,
 				}
 			);
@@ -380,7 +359,6 @@ export default function ChatWindow({
 		}
 	};
 
-	// USE FOR OFFER
 	const submitOffer = () => {
 		const offerString = `::downpayment::"${downpaymentPrice}",::totalprice::"${totalPrice}"`;
 		handleSendMessage(offerString);
@@ -570,7 +548,11 @@ export default function ChatWindow({
 					<div ref={messagesEndRef} />
 				</div>
 				{request && request.price != null && (
-					<div className="service-info">
+					<div
+						className={
+							user.isEmployee ? "service-info" : "service-info-client"
+						}
+					>
 						<div>
 							<b>PAID AMOUNT:</b> ₱ {request.paidAmount}
 						</div>
@@ -670,7 +652,6 @@ export default function ChatWindow({
 					</div>
 				)}
 			</div>
-			{/* AppointmentModal */}
 			<AppointmentModal
 				isOpen={isModalOpen}
 				onClose={() => setIsModalOpen(false)}

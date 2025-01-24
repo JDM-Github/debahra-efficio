@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// import "./TopBar.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	faUser,
@@ -27,13 +26,15 @@ export default function TopBar({ clickHandler }) {
 	return (
 		<div className="topbar mb-4 bg-green-800 text-white flex items-center justify-between p-2 shadow-md">
 			<div className="user-account flex items-center space-x-3">
-				<div className="logo w-8 h-8 bg-gray-300 rounded-full overflow-hidden">
-					<img
-						src={user.profileImg || "/default-profile.png"}
-						alt="Profile"
-						className="w-full h-full object-cover"
-					/>
-				</div>
+				{user.firstname && (
+					<div className="logo w-8 h-8 bg-gray-300 rounded-full overflow-hidden">
+						<img
+							src={user.profileImg || "/default-profile.png"}
+							alt="Profile"
+							className="w-full h-full object-cover"
+						/>
+					</div>
+				)}
 				<div className="texts flex flex-col">
 					<div className="name text-lg font-semibold">
 						{user.firstname

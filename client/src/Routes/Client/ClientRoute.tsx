@@ -21,6 +21,7 @@ import PaymentFailed from "./PaymentFailed.tsx";
 import Appointment from "./Appointment.tsx";
 
 export default function ClientRoute() {
+	const [isShrunk, setIsShrunk] = useState(false);
 	const navigate = useNavigate();
 	useEffect(() => {
 		if (localStorage.getItem("users") === null) {
@@ -37,13 +38,15 @@ export default function ClientRoute() {
 
 	return (
 		<div className="client">
-			<ClientNavigation />
-			<div className="client-content">
+			<ClientNavigation setIsShrunk={setIsShrunk} isShrunk={isShrunk} />
+			<div className={`client-content ${isShrunk ? "shrink" : ""}`}>
 				<Routes>
 					<Route
 						index
 						path="/"
-						element={<Dashboard changeURL={changeURL} />}
+						element={
+							<Dashboard user={user} changeURL={changeURL} />
+						}
 					/>
 					<Route
 						path="chats"

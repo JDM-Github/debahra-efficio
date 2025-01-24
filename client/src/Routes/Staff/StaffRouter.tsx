@@ -17,6 +17,7 @@ import Appointment from "./Appointment.tsx";
 import Profile from "../Client/Profile.tsx";
 
 export default function StaffRoute() {
+	const [isShrunk, setIsShrunk] = useState(false);
 	const navigate = useNavigate();
 	useEffect(() => {
 		if (localStorage.getItem("users") === null) {
@@ -31,14 +32,14 @@ export default function StaffRoute() {
 	};
 
 	return (
-		<div className="client">
-			<StaffNavigation />
-			<div className="client-content">
+		<div className="staff">
+			<StaffNavigation setIsShrunk={setIsShrunk} isShrunk={isShrunk} />
+			<div className={`staff-content ${isShrunk ? "shrink" : ""}`}>
 				<Routes>
 					<Route
 						index
 						path="/"
-						element={<Dashboard changeURL={changeURL} />}
+						element={<Dashboard user={user} changeURL={changeURL} />}
 					/>
 					<Route
 						path="chats"

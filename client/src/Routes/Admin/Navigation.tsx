@@ -15,14 +15,17 @@ import {
 	faHourglassHalf,
 	faUserPlus,
 	faTimesCircle,
+	faCoffee,
 } from "@fortawesome/free-solid-svg-icons";
 
 import Navigation from "../../Component/Navigation.tsx";
 
-export default function AdminNavigation() {
+export default function AdminNavigation({setIsShrunk, isShrunk}) {
 	const location = useLocation();
 	return (
 		<Navigation
+			setIsShrunk={setIsShrunk}
+			isShrunk={isShrunk}
 			status={"ADMIN"}
 			Nav={
 				<>
@@ -39,7 +42,7 @@ export default function AdminNavigation() {
 							icon={faTachometerAlt}
 							className="nav-icon"
 						/>
-						<div>Dashboard</div>
+						<div className="nav-text">Dashboard</div>
 					</NavLink>
 
 					<NavLink
@@ -53,6 +56,16 @@ export default function AdminNavigation() {
 							className="nav-icon"
 						/>
 						<div>Chats</div>
+					</NavLink>
+
+					<NavLink
+						to="services"
+						className={({ isActive }) =>
+							isActive ? "nav-items active-link" : "nav-items"
+						}
+					>
+						<FontAwesomeIcon icon={faCoffee} className="nav-icon" />
+						<div>Services</div>
 					</NavLink>
 
 					<NavLink
@@ -101,10 +114,10 @@ export default function AdminNavigation() {
 							icon={faHourglassHalf}
 							className="nav-icon"
 						/>
-						<div>Pending Requests</div>
+						<div>Requests</div>
 					</NavLink>
 
-					<NavLink
+					{/* <NavLink
 						to="ongoing-request"
 						className={({ isActive }) =>
 							isActive ? "nav-items active-link" : "nav-items"
@@ -115,7 +128,7 @@ export default function AdminNavigation() {
 							className="nav-icon"
 						/>
 						<div>Ongoing Requests</div>
-					</NavLink>
+					</NavLink> */}
 
 					<NavLink
 						to="appointment"
@@ -130,7 +143,7 @@ export default function AdminNavigation() {
 						<div>Appointment</div>
 					</NavLink>
 
-					<NavLink
+					{/* <NavLink
 						to="completed-request"
 						className={({ isActive }) =>
 							isActive ? "nav-items active-link" : "nav-items"
@@ -154,7 +167,7 @@ export default function AdminNavigation() {
 							className="nav-icon"
 						/>
 						<div>Cancelled Requests</div>
-					</NavLink>
+					</NavLink> */}
 
 					<hr />
 					<NavLink

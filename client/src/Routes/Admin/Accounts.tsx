@@ -74,7 +74,7 @@ export default function Accounts() {
 			);
 			if (response.success) {
 				toast.success("Item deleted successfully");
-				setRequestData(requestData.filter((item) => item.id !== id));
+				setRequestData(requestData.filter((item: any) => item.id !== id));
 			} else {
 				toast.error(response.message || "Failed to delete item");
 			}
@@ -128,6 +128,7 @@ export default function Accounts() {
 					setCurrentPage={setCurrPage}
 					itemsPerPage={limit}
 					total={total}
+					searchableHeaders={["id"]}
 				/>
 			</div>
 			<Copyright />

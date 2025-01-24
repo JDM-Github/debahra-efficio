@@ -17,11 +17,13 @@ import {
 
 import Navigation from "../../Component/Navigation.tsx";
 
-export default function ClientNavigation() {
+export default function ClientNavigation({setIsShrunk, isShrunk}) {
 	const location = useLocation();
 
 	return (
 		<Navigation
+			setIsShrunk={setIsShrunk}
+			isShrunk={isShrunk}
 			status={"CLIENT"}
 			Nav={
 				<>
@@ -66,7 +68,7 @@ export default function ClientNavigation() {
 
 					<hr />
 
-					<NavLink
+					{/* <NavLink
 						to="pending-request"
 						className={({ isActive }) =>
 							isActive ? "nav-items active-link" : "nav-items"
@@ -77,7 +79,7 @@ export default function ClientNavigation() {
 							className="nav-icon"
 						/>
 						<div>Pending Requests</div>
-					</NavLink>
+					</NavLink> */}
 
 					<NavLink
 						to="ongoing-request"
@@ -89,7 +91,7 @@ export default function ClientNavigation() {
 							icon={faSpinner}
 							className="nav-icon"
 						/>
-						<div>Ongoing Requests</div>
+						<div>Requests</div>
 					</NavLink>
 					<NavLink
 						to="appointment"
@@ -104,7 +106,7 @@ export default function ClientNavigation() {
 						<div>Appointment</div>
 					</NavLink>
 
-					<NavLink
+					{/* <NavLink
 						to="completed-request"
 						className={({ isActive }) =>
 							isActive ? "nav-items active-link" : "nav-items"
@@ -128,7 +130,7 @@ export default function ClientNavigation() {
 							className="nav-icon"
 						/>
 						<div>Cancelled Requests</div>
-					</NavLink>
+					</NavLink> */}
 
 					<hr />
 

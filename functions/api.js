@@ -5,10 +5,11 @@ const serverless = require("serverless-http");
 const path = require("path");
 const bodyParser = require("body-parser");
 const { v4: uuidv4 } = require("uuid");
+const sendEmail = require("./emailSender");
 
 const expressAsyncHandler = require("express-async-handler");
 
-const { sequelize, User } = require("./models");
+const { sequelize, User, Request, Service, Transaction } = require("./models");
 const {
 	userRouter,
 	chatRouter,
@@ -17,6 +18,15 @@ const {
 	appointmentRouter,
 	imageRouter,
 } = require("./routers.js");
+
+function sendEmailToUser(email, subject, text, body) {
+	const emailSubject = subject;
+	const emailText = text;
+	const emailHtml = body;
+	sendEmail(email, emailSubject, emailText, emailHtml, (error, info) => {
+		
+	});
+}
 
 class App {
 	constructor() {
@@ -55,6 +65,101 @@ class App {
 		this.router.use("/appointment", appointmentRouter);
 
 		this.router.get("/reset", expressAsyncHandler(this.reset));
+		this.router.get("/payment-success", async (req, res) => {
+			const { target, amount, token } = req.query;
+
+			if (!token) {
+				return res
+					.status(400)
+					.json({ error: "Payment token is missing" });
+			}
+
+			try {
+				const captureRequest = new paypal.orders.OrdersCaptureRequest(
+					token
+				);
+				const captureResponse = await client.execute(captureRequest);
+
+				if (captureResponse.result.status !== "COMPLETED") {
+					return res
+						.status(400)
+						.json({ error: "Payment not completed" });
+				}
+
+				const request = await Request.findByPk(target, {
+					include: [
+						{
+							model: User,
+							attributes: ["id", "firstname", "lastname", "email"],
+						},
+						{
+							model: Service,
+							attributes: ["serviceName"],
+						},
+					],
+				});
+				if (!request) {
+					return res.status(404).json({ error: "Request not found" });
+				}
+				
+
+				const subject = "Payment Confirmation";
+				const text = `Dear ${request.User.firstname} ${request.User.lastname},\n\nThank you for your payment of $${amount}. Your payment has been successfully processed.`;
+				const body = `
+					<h1>Payment Confirmation</h1>
+					<p>Dear ${request.User.firstname} ${request.User.lastname},</p>
+					<p>Thank you for your payment of <strong>$${amount}</strong>. Your payment has been successfully processed for the service: <strong>${
+					request.Service.serviceName
+				}</strong>.</p>
+					<p>Payment Details:</p>
+					<ul>
+						<li>Amount Paid: $${amount}</li>
+						<li>Total Paid: $${Math.min(request.paidAmount, request.price)}</li>
+						<li>Remaining Balance: $${
+							request.price -
+							Math.min(request.paidAmount, request.price)
+						}</li>
+					</ul>
+					<p>We appreciate your business!</p>
+					`;
+				sendEmailToUser(request.User.email, subject, text, body);
+				await request.update({
+					paidAmount: Math.min(
+						request.paidAmount + amount,
+						request.price
+					),
+				});
+
+				await Transaction.create({
+					userId: request.userId,
+					assignedEmployee: request.assignedEmployee,
+					requestId: request.id,
+					typeOfTransaction: "PAYMENT",
+					amount: amount,
+					referenceNumber: uuidv4(),
+				});
+
+				res.redirect(`https://debahra.netlify.app/client/ongoing-request?message=success`);
+			} catch (error) {
+				console.error("Error capturing payment:", error);
+				res.status(500).json({ error: "Failed to process payment" });
+			}
+		});
+
+		this.router.get("/payment-failed", async (req, res) => {
+			try {
+				res.redirect(
+					"https://debahra.netlify.app/client/ongoing-request?message=failed"
+				);
+			} catch (error) {
+				console.error("Error handling payment failure:", error);
+				res.status(500).json({
+					error: "Failed to process payment failure",
+				});
+			}
+		});
+
+
 		this.router.post("/example", expressAsyncHandler(this.example));
 
 		this.router.post("/request_account", this.requestAccount);
@@ -111,16 +216,17 @@ class App {
 			PAYPAL_CLIENT_ID,
 			PAYPAL_CLIENT_SECRET
 		);
-		const client = new paypal.core.PayPalHttpClient(environment);
 
+		const client = new paypal.core.PayPalHttpClient(environment);
 		this.router.post("/create-payment", async (req, res) => {
-			const { amount, userId, body } = req.body;
+			const { amount, targetServiceId } = req.body;
+			const baseUrl = `https://${req.get("host")}`;
 			try {
 				const formattedAmount = parseFloat(amount);
-				if (isNaN(formattedAmount)) {
+				if (isNaN(formattedAmount) || amount <= 0) {
 					throw new Error("Invalid amount provided");
 				}
-		
+
 				const orderRequest = new paypal.orders.OrdersCreateRequest();
 				orderRequest.requestBody({
 					intent: "CAPTURE",
@@ -137,13 +243,10 @@ class App {
 						brand_name: "EFFICIO",
 						landing_page: "BILLING",
 						user_action: "PAY_NOW",
-						return_url: `https://debahra.netlify.app/client/payment-success?user=${userId}&body=${encodeURIComponent(
-							JSON.stringify(body)
-						)}`,
-						cancel_url: `https://debahra.netlify.app/client/payment-failed?user=${userId}`,
+						return_url: `${baseUrl}/.netlify/functions/api/payment-success?target=${targetServiceId}&amount=${formattedAmount}`,
+						cancel_url: `${baseUrl}/.netlify/functions/api/payment-failed`,
 					},
 				});
-
 				const order = await client.execute(orderRequest);
 				const approvalUrl = order.result.links.find(
 					(link) => link.rel === "approve"
@@ -159,7 +262,6 @@ class App {
 				});
 			}
 		});
-
 	}
 
 	requestAccount(req, res) {

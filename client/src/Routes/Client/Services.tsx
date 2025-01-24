@@ -2,16 +2,11 @@ import React, { ReactElement, useEffect, useState } from "react";
 import TopBar from "../../Component/TopBar.tsx";
 import Copyright from "../../Component/Copyright.tsx";
 import FormMaker from "../../Component/FormMaker.tsx";
-// import "./SCSS/Services.scss";
 
 import RequestHandler from "../../Functions/RequestHandler.js";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Details from "../../Component/Details.tsx";
-
-const AllTarget = {
-	// "DTI REGISTRATION": <DTIRegistration />,
-};
 
 export default function Services({ changeURL }) {
 	interface Service {
@@ -19,6 +14,7 @@ export default function Services({ changeURL }) {
 		id: number;
 		serviceName: string;
 		serviceURL: string;
+		serviceURLS: [string];
 		serviceImg: string;
 		serviceDescription: string;
 	}
@@ -29,6 +25,7 @@ export default function Services({ changeURL }) {
 	const [formPrice, setFormPrice] = useState(100);
 	const [targetForm, setTargetForm] = useState<ReactElement | null>(null);
 	const [formlink, setFormLink] = useState<string>("");
+	const [formlinks, setFormLinks] = useState<string[]>([]);
 	const [formid, setFormId] = useState<string>("");
 	const [formimg, setFormImg] = useState("");
 	const [description, setDescription] = useState("");
@@ -63,10 +60,11 @@ export default function Services({ changeURL }) {
 		getAllService();
 	}, []);
 
-	const handleShowForm = (target, id, link, price) => {
+	const handleShowForm = (target, id, links, link, price) => {
 		setFormName(target);
-		setTargetForm(AllTarget[target] || null);
+		setTargetForm(null);
 		setFormLink(link);
+		setFormLinks(links);
 		setFormId(id);
 		setFormPrice(price);
 		setShowForm(true);
@@ -87,6 +85,7 @@ export default function Services({ changeURL }) {
 					formComp={targetForm}
 					formName={formname}
 					formLink={formlink}
+					formLinks={formlinks}
 					serviceId={formid}
 					price={formPrice}
 				/>
@@ -130,6 +129,7 @@ export default function Services({ changeURL }) {
 												handleShowForm(
 													target.value,
 													service.id,
+													service.serviceURLS,
 													service.serviceURL,
 													service.servicePrice
 												);
