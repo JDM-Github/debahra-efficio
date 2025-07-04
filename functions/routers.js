@@ -1174,40 +1174,6 @@ class RequestRouter {
 				});
 			}
 
-			const certificateData = {
-				title: "Certificate of Appointment",
-				requestId: id,
-				service: {
-					id: request.serviceRequestId,
-					name: request.Service?.serviceName || "N/A",
-				},
-				user: {
-					id: user.id,
-					firstname: user.firstname,
-					lastname: user.lastname,
-					email: user.email,
-				},
-				appointment: {
-					date: appointmentDate,
-					notes: appointmentNotes || "No additional notes provided.",
-					staff: {
-						id: request.Employee.id,
-						firstname: request.Employee.User.firstname,
-						lastname: request.Employee.User.lastname,
-					},
-				},
-				status: {
-					current: request.status,
-					progress: request.progress || [],
-				},
-				priceDetails: {
-					totalPrice: request.price || "N/A",
-					paidAmount: request.paidAmount || 0,
-				},
-				documentDetails: request.uploadedDocuments || {},
-				issuedAt: new Date().toISOString(),
-			};
-
 			const user = await User.findByPk(request.userId);
 			if (!user) {
 				return res.status(404).send({
@@ -1281,7 +1247,17 @@ class RequestRouter {
 		const { id } = req.body;
 
 		try {
-			const request = await Request.findByPk(id);
+			const request = await Request.findByPk(id, {
+				include: [
+					{
+						model: Employee,
+						include: {
+							model: User,
+						},
+					},
+					{ model: Service, attributes: ["serviceName"] },
+				],
+			});
 
 			if (!request) {
 				return res.status(404).send({
@@ -1308,10 +1284,18 @@ class RequestRouter {
 				return b.complete - a.complete;
 			});
 
+
+
 			await request.update({
 				status: "COMPLETED",
 				progress: sortedProgress,
-				certificate: certificateData,
+				certificate: {
+					certificateNumber: `CERT-${Date.now()}`,
+					certificateName: request.Service.serviceName,
+					certificateIssuedDate: new Date(),
+					certificateIssuedBy: request.Employee.User.firstname + " " + request.Employee.User.lastname,
+					certificateIssuedTo: request.User.firstname + " " + request.User.lastname,					
+				}
 			});
 
 			await ActivityLog.create({
@@ -1319,6 +1303,7 @@ class RequestRouter {
 			});
 
 			const user = await User.findByPk(request.userId);
+			
 			if (user) {
 				const subject = "Your Service Request is Complete";
 				const text = `Dear ${user.firstname}, your service request has been successfully completed.`;
@@ -1345,7 +1330,7 @@ class RequestRouter {
 	}
 
 	async requestDocument(req, res) {
-		const { userId, serviceId, serviceName, imageUrls, price } = req.body;
+		const { userId, serviceId, serviceName, imageUrls, image, price } = req.body;
 
 		try {
 			const service = await Service.findOne({
@@ -1402,6 +1387,7 @@ class RequestRouter {
 				userId: userId,
 				serviceRequestId: serviceId,
 				uploadedDocuments: imageUrls,
+				uploadedDocument: image,
 				progress: staticProgressStages,
 			});
 			const subject = "Service Request Confirmation";
@@ -1696,15 +1682,15 @@ class RequestRouter {
 							"location",
 						],
 					},
-					// {
-					// 	model: Employee,
-					// 	include: [
-					// 		{
-					// 			model: User,
-					// 			attributes: ["firstname", "lastname"],
-					// 		},
-					// 	],
-					// },
+					{
+						model: Employee,
+						include: [
+							{
+								model: User,
+								attributes: ["firstname", "lastname"],
+							},
+						],
+					},
 					{
 						model: Request,
 						attributes: { exclude: [] },

@@ -80,12 +80,12 @@ export default function ClientRoute() {
 						}
 					/>
 
-					<Route
+					{/* <Route
 						path="pending-request"
 						element={
 							<PendingRequest user={user} changeURL={changeURL} />
 						}
-					/>
+					/> */}
 					<Route
 						path="ongoing-request"
 						element={

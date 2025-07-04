@@ -228,7 +228,7 @@ export default function Requests() {
 			label: "CERTIFICATE",
 			onCondition: (item) =>
 				status == "COMPLETED" || status == "APPOINTED",
-			onClick: (id, item) => viewServiceRequest(item),
+			onClick: (id, item) => viewCertificate(item),
 		},
 	];
 	const [isModalCertificateOpen, setModalCertificateOpen] = useState(false);

@@ -27,7 +27,7 @@ const renderRow = (item) => (
 		<td>{item.User.firstname + " " + item.User.lastname}</td>
 		<td>{item.User.email}</td>
 		{/* <td> */}
-			{/* {item.Employee.User.firstname + " " + item.Employee.User.lastname} */}
+		{/* {item.Employee.User.firstname + " " + item.Employee.User.lastname} */}
 		{/* </td> */}
 		<td>{item.Request.Service.serviceName}</td>
 		<td>{item.amount}</td>
@@ -39,7 +39,7 @@ const renderRow = (item) => (
 export default function Transaction({ user, changeURL }) {
 	const [requestData, setRequestData] = useState([]);
 	const [currPage, setCurrPage] = useState(1);
-	const [total, setTotal] = useState(0);
+	const [total, setTotal] = useState(1);
 	const limit = 10;
 
 	const [isTransactionModalOpen, setTransactionModalOpen] = useState(false);
@@ -78,6 +78,7 @@ export default function Transaction({ user, changeURL }) {
 						"Error occurred. Please check your credentials."
 				);
 			} else {
+				// alert(JSON.stringify(data.data));
 				setRequestData(data.data);
 				setTotal(data.total);
 			}
@@ -105,6 +106,7 @@ export default function Transaction({ user, changeURL }) {
 					setCurrentPage={setCurrPage}
 					itemsPerPage={limit}
 					total={total}
+					searchableHeaders={["id"]}
 				/>
 			</div>
 			<Copyright />

@@ -25,6 +25,7 @@ export default function Dashboard({ user, changeURL }) {
 				);
 			} else {
 				const fakeStatusData = data.statusData || {};
+				const requested = data.requests || {};
 				const fakeTransactions = data.transactions.map(
 					(transaction) => ({
 						id: transaction.id,
@@ -35,13 +36,14 @@ export default function Dashboard({ user, changeURL }) {
 						date: transaction.createdAt.split("T")[0],
 					})
 				);
+				setRequests(requested);
 				setStatusData(fakeStatusData);
 				setTransactions(fakeTransactions);
 				setPieData({
-					labels: Object.keys(statusData),
+					labels: Object.keys(fakeStatusData),
 					datasets: [
 						{
-							data: Object.values(statusData),
+							data: Object.values(fakeStatusData	),
 							backgroundColor: ["#76b349", "#4caf50", "#f44336"],
 							hoverOffset: 4,
 						},
@@ -60,6 +62,7 @@ export default function Dashboard({ user, changeURL }) {
 
 	const [allTransaction, setAllTransaction] = useState(0);
 	const [allRequests, setAllRequests] = useState(0);
+	const [requests, setRequests] = useState<any>(null);
 	const [transactions, setTransactions] = useState<any>([]);
 	const [statusData, setStatusData] = useState<any>({});
 	const [pieData, setPieData] = useState({
@@ -180,6 +183,65 @@ export default function Dashboard({ user, changeURL }) {
 							Request Status
 						</h2>
 						<Pie data={pieData} />
+						<div className="mt-6">
+							<h3 className="text-base font-semibold text-gray-700 mb-3">
+								Not Approved Documents
+							</h3>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								{requests &&
+									requests.slice(0, 4).flatMap((request) =>
+										request.uploadedDocuments
+											.filter(
+												(document) =>
+													!document.isApproved
+											)
+											.map((document) => (
+												<div
+													key={document.url}
+													className="flex items-center justify-between bg-red-50 border border-red-200 rounded-md p-3 shadow-sm"
+												>
+													<div className="flex items-center space-x-2">
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															className="h-5 w-5 text-red-500"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+															strokeWidth={2}
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+															/>
+														</svg>
+														<span className="text-sm text-gray-800 font-medium">
+															{document.fileName}
+														</span>
+													</div>
+													<a
+														href={document.url}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="text-sm text-red-600 font-medium hover:underline"
+													>
+														View
+													</a>
+												</div>
+											))
+									)}
+								{requests &&
+									requests.every((request) =>
+										request.uploadedDocuments.every(
+											(doc) => doc.isApproved
+										)
+									) && (
+										<p className="text-sm text-gray-500">
+											All documents are approved.
+										</p>
+									)}
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

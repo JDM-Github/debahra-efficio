@@ -96,6 +96,7 @@ export default function FormMaker({
 	const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [fileType, setFileType] = useState("");
+	const [image, setImage] = useState<File | null>(null);
 	const navigate = useNavigate();
 	const [previewIndex, setPreviewIndex] = useState(null);
 
@@ -120,9 +121,14 @@ export default function FormMaker({
 			toast.error("Please upload a valid ZIP file!");
 			return;
 		}
+		if (!image) {
+			toast.error("Please upload a certificate!");
+			return;
+		}
 
 		const toastId = toast.loading("Uploading files, please wait...");
 		const uploadedFileUrls: any[] = [];
+		let newUploadedFile = "";
 
 		try {
 			const zip = await JSZip.loadAsync(uploadedFile);
@@ -208,6 +214,42 @@ export default function FormMaker({
 			});
 		}
 
+		const formData = new FormData();
+		formData.append("file", image);
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"image/upload-image",
+				formData,
+				{
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
+				}
+			);
+
+			if (data.success) {
+				newUploadedFile = data.uploadedDocument;
+			} else {
+				toast.update(toastId, {
+					render: `Failed to upload ${image.name}: ${data.message}`,
+					type: "error",
+					isLoading: false,
+					autoClose: 5000,
+				});
+				return null;
+			}
+		} catch (error) {
+			console.error(`Error uploading ${image.name}:`, error);
+			toast.update(toastId, {
+				render: `Error uploading ${image.name}`,
+				type: "error",
+				isLoading: false,
+				autoClose: 5000,
+			});
+			return null;
+		}
+
 		try {
 			const data = await RequestHandler.handleRequest(
 				"post",
@@ -216,6 +258,7 @@ export default function FormMaker({
 					userId: user.id,
 					serviceId,
 					serviceName: formName,
+					image: newUploadedFile,
 					imageUrls: uploadedFileUrls,
 				}
 			);
@@ -237,6 +280,12 @@ export default function FormMaker({
 		if (file) {
 			setUploadedFile(file);
 			setFileType(file.type);
+		}
+	};
+	const handleImageChange = (event) => {
+		const file = event.target.files[0];
+		if (file) {
+			setImage(file);
 		}
 	};
 
@@ -334,6 +383,27 @@ export default function FormMaker({
 								</p>
 							</div>
 						)}
+
+					<label className="upload-label flex flex-col items-center bg-green-100 border border-green-300 rounded-lg p-4 cursor-pointer">
+						<input
+							type="file"
+							accept=".pdf"
+							onChange={handleImageChange}
+							className="hidden"
+							required
+						/>
+						<span className="text-green-700 font-medium">
+							Upload Certificate
+						</span>
+					</label>
+
+					{image && (
+						<div className="uploaded-file mt-4 text-center text-green-700">
+							<p className="font-medium">
+								Uploaded Certificate: {image.name}
+							</p>
+						</div>
+					)}
 
 					<div className="flex justify-between">
 						<button

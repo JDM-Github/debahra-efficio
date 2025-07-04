@@ -23,9 +23,7 @@ function sendEmailToUser(email, subject, text, body) {
 	const emailSubject = subject;
 	const emailText = text;
 	const emailHtml = body;
-	sendEmail(email, emailSubject, emailText, emailHtml, (error, info) => {
-		
-	});
+	sendEmail(email, emailSubject, emailText, emailHtml, (error, info) => {});
 }
 
 class App {
@@ -90,7 +88,12 @@ class App {
 					include: [
 						{
 							model: User,
-							attributes: ["id", "firstname", "lastname", "email"],
+							attributes: [
+								"id",
+								"firstname",
+								"lastname",
+								"email",
+							],
 						},
 						{
 							model: Service,
@@ -101,7 +104,6 @@ class App {
 				if (!request) {
 					return res.status(404).json({ error: "Request not found" });
 				}
-				
 
 				const subject = "Payment Confirmation";
 				const text = `Dear ${request.User.firstname} ${request.User.lastname},\n\nThank you for your payment of $${amount}. Your payment has been successfully processed.`;
@@ -139,7 +141,9 @@ class App {
 					referenceNumber: uuidv4(),
 				});
 
-				res.redirect(`https://debahra.netlify.app/client/ongoing-request?message=success`);
+				res.redirect(
+					`https://debahra.netlify.app/client/ongoing-request?message=success`
+				);
 			} catch (error) {
 				console.error("Error capturing payment:", error);
 				res.status(500).json({ error: "Failed to process payment" });
@@ -158,7 +162,6 @@ class App {
 				});
 			}
 		});
-
 
 		this.router.post("/example", expressAsyncHandler(this.example));
 
@@ -208,11 +211,19 @@ class App {
 		});
 
 		const paypal = require("@paypal/checkout-server-sdk");
+		// const PAYPAL_CLIENT_ID =
+		// 	"Af0tB87keOdzXZpl_Ib8lb86Udu5oTWSL-xHDwAz4q9GiBQSFbejrkAqY2QQU5XAlYJ5PyFc6wsM45Wq";
+		// const PAYPAL_CLIENT_SECRET =
+		// 	"EO6ufyuol6bxnX_E9HV9OmpqgD9SCWI5AEEohSaLYjBpJqbsVzv650YBQDWk7mZgPIPqE0IRpoQ5Gcyu";
+		// const environment = new paypal.core.SandboxEnvironment(
+		// 	PAYPAL_CLIENT_ID,
+		// 	PAYPAL_CLIENT_SECRET
+		// );
 		const PAYPAL_CLIENT_ID =
-			"Af0tB87keOdzXZpl_Ib8lb86Udu5oTWSL-xHDwAz4q9GiBQSFbejrkAqY2QQU5XAlYJ5PyFc6wsM45Wq";
+			"AX5AGNee2pN271sDzuXWPldkFw9x_97bvDEKdpXcwNgmdE26uTD64JjEi2XRpY2AWKyUn29kicp1mocQ";
 		const PAYPAL_CLIENT_SECRET =
-			"EO6ufyuol6bxnX_E9HV9OmpqgD9SCWI5AEEohSaLYjBpJqbsVzv650YBQDWk7mZgPIPqE0IRpoQ5Gcyu";
-		const environment = new paypal.core.SandboxEnvironment(
+			"EIKjEnAUbgNvX6ZswF0WurD8ocna3IAiF7TyHnL_T8B_548iOSGgomNiQxFNOX3fl8CuE9uXX_ojyNup";
+		const environment = new paypal.core.LiveEnvironment(
 			PAYPAL_CLIENT_ID,
 			PAYPAL_CLIENT_SECRET
 		);
@@ -234,7 +245,8 @@ class App {
 						{
 							amount: {
 								currency_code: "PHP",
-								value: formattedAmount.toFixed(2),
+								// value: formattedAmount.toFixed(2),
+								value: 0.01, // For testing purposes, set a fixed amount
 							},
 							description: "Payment description",
 						},

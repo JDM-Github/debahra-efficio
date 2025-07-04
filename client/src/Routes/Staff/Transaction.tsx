@@ -104,6 +104,7 @@ export default function Transaction({ user, changeURL }) {
 					setCurrentPage={setCurrPage}
 					itemsPerPage={limit}
 					total={total}
+					searchableHeaders={["id"]}
 				/>
 			</div>
 			<Copyright />

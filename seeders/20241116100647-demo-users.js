@@ -24,24 +24,9 @@ module.exports = {
 			});
 		}
 
-		users.push({
-			profileImg: faker.image.avatar(), // Use image.avatar to generate a random avatar image URL
-			companyName: "JDM Business",
-			username: faker.internet.username(),
-			firstname: faker.person.firstName(),
-			lastname: faker.person.lastName(),
-			email: "jdmaster888@gmail.com",
-			password: hashedPassword,
-			location: faker.location.city(),
-			isAdmin: false,
-			isEmployee: false,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-
 		// users.push({
 		// 	profileImg: faker.image.avatar(), // Use image.avatar to generate a random avatar image URL
-		// 	companyName: "JDM Business",
+		// 	companyName: "Business",
 		// 	username: faker.internet.username(),
 		// 	firstname: faker.person.firstName(),
 		// 	lastname: faker.person.lastName(),

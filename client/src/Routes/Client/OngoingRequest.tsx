@@ -110,6 +110,8 @@ export default function OngoingRequest({ user, changeURL }) {
 	const [serviceData, setServiceData] = useState<Service | null>(null);
 
 	const [showProgressModal, setShowProgressModal] = useState(false);
+	const [showcertificate, setShowcertificate] = useState(false);
+	const [currentCertificate, setCurrentCertificate] = useState<any>(null);
 	const [currentRequest, setCurrentRequest] = useState<any>(null);
 	const [currentStage, setCurrentStage] = useState(0);
 
@@ -192,7 +194,19 @@ export default function OngoingRequest({ user, changeURL }) {
 				}
 			},
 		},
+		{
+			icon: faBarsProgress,
+			className: "done-btn",
+			label: "CERTIFICATE",
+			onCondition: (item) => item.status == "COMPLETED",
+			onClick: (id, item) => viewCertificate(item),
+		},
 	];
+
+	const viewCertificate = async (item) => {
+		setShowcertificate(true);
+		setCurrentCertificate(item);
+	};
 
 	const viewServiceRequest = async (item) => {
 		setServiceData(item);
@@ -293,6 +307,17 @@ export default function OngoingRequest({ user, changeURL }) {
 							<h2 className="text-xl font-semibold border-l-4 border-green-600 pl-4">
 								Uploaded Documents
 							</h2>
+							<button>
+								{serviceData.uploadedDocument && (
+									<a
+										href={serviceData.uploadedDocument}
+										download={serviceData.uploadedDocument}
+										className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+									>
+										DOWNLOAD
+									</a>
+								)}
+							</button>
 							<span
 								className="text-5xl text-gray-200 cursor-pointer hover:text-red-500"
 								onClick={() => setShowServiceModal(false)}
@@ -436,6 +461,86 @@ export default function OngoingRequest({ user, changeURL }) {
 								className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md mt-4"
 							>
 								Proceed to Pay
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{showcertificate && currentCertificate && (
+				<div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+					<div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-2xl animate-fadeIn">
+						{/* Header */}
+						<div className="flex justify-between items-center border-b border-gray-200 px-6 py-4 bg-green-700 text-white">
+							<h2 className="text-xl font-bold flex items-center gap-2">
+								<svg
+									className="w-6 h-6 text-white"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+									/>
+								</svg>
+								Certificate
+							</h2>
+							<button
+								onClick={() => setShowcertificate(false)}
+								className="text-3xl hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-300 rounded"
+								aria-label="Close"
+							>
+								&times;
+							</button>
+						</div>
+
+						{/* Body */}
+						<div className="px-6 py-6 space-y-4 overflow-y-auto max-h-[70vh]">
+							<p className="text-sm text-gray-500">
+								<strong>Certificate Number:</strong>{" "}
+								{currentCertificate.certificateNumber}
+							</p>
+							<p className="text-sm text-gray-500">
+								<strong>Issued Date:</strong>{" "}
+								{new Date(
+									currentCertificate.certificateIssuedDate
+								).toLocaleString()}
+							</p>
+
+							<div className="border border-green-300 rounded-lg p-4 bg-green-50">
+								<h3 className="text-lg font-semibold text-green-800 mb-2">
+									{currentCertificate.certificateName}
+								</h3>
+								<p className="text-sm text-gray-700">
+									This certifies that{" "}
+									<strong>
+										{currentCertificate.certificateIssuedTo}
+									</strong>{" "}
+									has been issued this certificate.
+								</p>
+								<ul className="list-disc list-inside mt-2 text-gray-700">
+									<li>
+										<strong>Issued By:</strong>{" "}
+										{currentCertificate.certificateIssuedBy}
+									</li>
+								</ul>
+							</div>
+
+							<p className="text-sm text-gray-600">
+								Please keep this certificate for your records.
+							</p>
+						</div>
+
+						{/* Footer */}
+						<div className="flex justify-end items-center bg-gray-50 px-6 py-4">
+							<button
+								onClick={() => setShowcertificate(false)}
+								className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+							>
+								Close
 							</button>
 						</div>
 					</div>
